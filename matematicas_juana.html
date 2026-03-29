@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MateBlocks – Aprende con Juana</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧮</text></svg>">
+<style>
+  :root {
+    --bg: #0f0e17;
+    --surface: #1a1927;
+    --surface2: #232235;
+    --accent1: #ff6b6b;
+    --accent2: #ffd166;
+    --accent3: #06d6a0;
+    --accent4: #118ab2;
+    --accent5: #c77dff;
+    --text: #fffffe;
+    --text-muted: #a7a9be;
+    --radius: 16px;
+    --cube-size: 36px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 28px;
+    background: var(--surface);
+    border-bottom: 2px solid var(--surface2);
+    position: sticky; top: 0; z-index: 100;
+  }
+  header h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.8rem;
+    background: linear-gradient(135deg, var(--accent2), var(--accent1));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .stars { margin-left: auto; font-size: 1.1rem; color: var(--accent2); display:flex; gap:6px; align-items:center; }
+
+  /* ── NAV TABS ── */
+  nav {
+    display: flex;
+    gap: 8px;
+    padding: 16px 28px;
+    background: var(--surface);
+    overflow-x: auto;
+    border-bottom: 2px solid var(--surface2);
+  }
+  nav button {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 10px 18px;
+    border: 2px solid transparent;
+    border-radius: 50px;
+    background: var(--surface2);
+    color: var(--text-muted);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all .2s;
+  }
+  nav button.active, nav button:hover {
+    background: var(--accent3);
+    color: #0f0e17;
+    border-color: var(--accent3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(6,214,160,.35);
+  }
+  nav button.active { color: #0f0e17; }
+
+  /* ── MAIN LAYOUT ── */
+  main { max-width: 900px; margin: 0 auto; padding: 28px 20px 60px; }
+  .section { display: none; animation: fadeIn .4s ease; }
+  .section.active { display: block; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── SECTION TITLE ── */
+  .sec-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    margin-bottom: 8px;
+  }
+  .sec-desc { color: var(--text-muted); margin-bottom: 28px; font-size: 1rem; line-height: 1.6; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 24px;
+    border: 1.5px solid var(--surface2);
+  }
+  .card h3 { font-size: 1.15rem; font-weight: 800; margin-bottom: 14px; }
+
+  /* ── SLIDER CONTROLS ── */
+  .slider-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .slider-row label { font-weight: 700; color: var(--text-muted); font-size:.9rem; min-width:80px; }
+  input[type=range] {
+    -webkit-appearance: none;
+    height: 6px; border-radius: 3px;
+    background: var(--surface2);
+    outline: none; flex: 1; min-width: 120px;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--accent3); cursor: pointer;
+    box-shadow: 0 0 8px rgba(6,214,160,.5);
+  }
+  .val-badge {
+    background: var(--accent3); color: #0f0e17;
+    font-weight: 800; border-radius: 8px;
+    padding: 4px 12px; font-size: 1rem; min-width: 44px; text-align:center;
+  }
+
+  /* ── CUBE GRID ── */
+  #cube-stage {
+    min-height: 160px;
+    display: flex; flex-wrap: wrap;
+    gap: 6px;
+    margin: 20px 0;
+    align-items: flex-start;
+  }
+  .tower {
+    display: flex; flex-direction: column-reverse;
+    gap: 4px;
+    align-items: center;
+  }
+  .cube {
+    width: var(--cube-size); height: var(--cube-size);
+    border-radius: 6px;
+    position: relative;
+    animation: popIn .25s cubic-bezier(.175,.885,.32,1.275) both;
+  }
+  @keyframes popIn {
+    from { transform: scale(0) rotate(-10deg); opacity:0; }
+    to   { transform: scale(1) rotate(0deg);  opacity:1; }
+  }
+  .cube::after {
+    content:'';
+    position:absolute; inset:0;
+    border-radius:6px;
+    background: linear-gradient(135deg, rgba(255,255,255,.25) 0%, transparent 60%);
+  }
+
+  /* ── EQUATION DISPLAY ── */
+  .equation-box {
+    background: var(--surface2);
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.6rem;
+    text-align: center;
+    letter-spacing: 2px;
+    margin-top: 8px;
+  }
+  .eq-num { color: var(--accent2); }
+  .eq-op  { color: var(--accent1); }
+  .eq-res { color: var(--accent3); }
+
+  /* ── MODE TOGGLE ── */
+  .mode-toggle {
+    display: flex; gap: 10px; margin-bottom: 20px;
+  }
+  .mode-btn {
+    flex: 1; padding: 12px;
+    border: 2px solid var(--surface2);
+    border-radius: 12px;
+    background: var(--surface2);
+    color: var(--text-muted);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700; font-size: .95rem;
+    cursor: pointer; transition: all .2s; text-align:center;
+  }
+  .mode-btn.active { border-color: var(--accent5); color: var(--accent5); background: rgba(199,125,255,.1); }
+
+  /* ── TABLA DE MULTIPLICAR ── */
+  .tabla-grid {
+    display: grid;
+    grid-template-columns: repeat(11, 1fr);
+    gap: 3px;
+    overflow-x: auto;
+  }
+  .tcell {
+    aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 6px;
+    font-size: .78rem; font-weight: 700;
+    min-width: 34px; min-height: 34px;
+    transition: all .15s;
+    cursor: pointer;
+  }
+  .tcell.header { background: var(--surface2); color: var(--text-muted); font-size: .7rem; }
+  .tcell.data { background: var(--surface2); color: var(--text); }
+  .tcell.data:hover { transform: scale(1.25); z-index: 2; position: relative; }
+  .tcell.highlight { animation: pulse .5s ease; }
+  @keyframes pulse {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.3); }
+    100% { transform: scale(1); }
+  }
+
+  /* ── PRACTICE AREA ── */
+  .problem-box {
+    background: var(--surface2);
+    border-radius: var(--radius);
+    padding: 28px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .problem-display {
+    font-family: 'Fredoka One', cursive;
+    font-size: 3.5rem;
+    letter-spacing: 4px;
+    line-height: 1.2;
+  }
+  .problem-display .op { color: var(--accent1); }
+  .problem-display .line { display: block; border-top: 3px solid var(--text-muted); margin-top: 8px; padding-top: 8px; }
+
+  .answer-input {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.2rem;
+    background: var(--surface);
+    border: 3px solid var(--surface2);
+    color: var(--text);
+    border-radius: 12px;
+    padding: 12px 24px;
+    text-align: center;
+    width: 180px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .answer-input:focus { border-color: var(--accent3); }
+  .answer-input.correct { border-color: var(--accent3); background: rgba(6,214,160,.1); }
+  .answer-input.wrong   { border-color: var(--accent1); background: rgba(255,107,107,.1); }
+
+  .btn-check {
+    display: block; margin: 16px auto 0;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.2rem;
+    padding: 14px 40px;
+    border: none; border-radius: 50px;
+    background: linear-gradient(135deg, var(--accent3), var(--accent4));
+    color: #0f0e17;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s;
+    box-shadow: 0 4px 18px rgba(6,214,160,.35);
+  }
+  .btn-check:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(6,214,160,.5); }
+
+  .feedback {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.4rem;
+    text-align: center;
+    min-height: 40px;
+    margin-top: 12px;
+    transition: opacity .3s;
+  }
+  .feedback.ok  { color: var(--accent3); }
+  .feedback.err { color: var(--accent1); }
+
+  /* level selector */
+  .level-row { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .lvl-btn {
+    padding: 8px 18px; border-radius: 50px;
+    border: 2px solid var(--surface2);
+    background: var(--surface2); color: var(--text-muted);
+    font-weight: 700; cursor: pointer; transition: all .15s; font-family:'Nunito',sans-serif;
+  }
+  .lvl-btn.active { border-color: var(--accent2); color: var(--accent2); background: rgba(255,209,102,.1); }
+
+  /* hint */
+  .hint-box {
+    background: rgba(199,125,255,.1);
+    border: 1.5px solid rgba(199,125,255,.3);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-top: 14px;
+    color: var(--accent5);
+    font-size: .95rem;
+    line-height: 1.6;
+    display: none;
+  }
+  .hint-box.visible { display: block; }
+  .btn-hint {
+    font-family:'Nunito',sans-serif; font-weight:700;
+    background: none; border: 1.5px solid var(--accent5);
+    color: var(--accent5); border-radius: 50px;
+    padding: 7px 18px; cursor: pointer; margin-top: 10px;
+    transition: background .2s;
+  }
+  .btn-hint:hover { background: rgba(199,125,255,.15); }
+
+  /* progress bar */
+  .progress-row { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+  .prog-bar { flex:1; height:10px; background:var(--surface2); border-radius:5px; overflow:hidden; }
+  .prog-fill { height:100%; border-radius:5px; background: linear-gradient(90deg,var(--accent3),var(--accent4)); transition: width .4s ease; }
+  .prog-label { font-weight:700; font-size:.85rem; color:var(--text-muted); white-space:nowrap; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--surface); }
+  ::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 3px; }
+
+  /* responsive */
+  @media(max-width:600px) {
+    :root { --cube-size: 28px; }
+    .problem-display { font-size: 2.5rem; }
+    .tabla-grid { gap:2px; }
+    .tcell { min-width:28px; min-height:28px; font-size:.65rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span style="font-size:1.8rem">🧊</span>
+  <h1>MateBlocks</h1>
+  <div class="stars">⭐ <span id="score">0</span> pts</div>
+</header>
+
+<nav>
+  <button class="active" onclick="showSection('visual')">🎲 Visualización</button>
+  <button onclick="showSection('tablas')">📊 Tablas</button>
+  <button onclick="showSection('mult')">✖️ Multiplicación</button>
+  <button onclick="showSection('div')">➗ División</button>
+</nav>
+
+<main>
+
+<!-- ══════════════════════════════════════
+     SECCIÓN 1: VISUALIZACIÓN
+══════════════════════════════════════ -->
+<div class="section active" id="sec-visual">
+  <div class="sec-title" style="color:var(--accent3)">🎲 Ver para entender</div>
+  <p class="sec-desc">Mueve los controles y observá cómo los cubos se agrupan. La multiplicación es agrupar, la división es repartir.</p>
+
+  <div class="card">
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="modeMultBtn" onclick="setVizMode('mult')">✖️ Multiplicación</button>
+      <button class="mode-btn" id="modeDivBtn"  onclick="setVizMode('div')">➗ División</button>
+    </div>
+
+    <div class="slider-row" id="slider-mult">
+      <label>Torres</label>
+      <input type="range" id="slA" min="1" max="10" value="4" oninput="updateViz()">
+      <span class="val-badge" id="lblA">4</span>
+      <label>Cubos c/u</label>
+      <input type="range" id="slB" min="1" max="10" value="4" oninput="updateViz()">
+      <span class="val-badge" id="lblB">4</span>
+    </div>
+
+    <div class="slider-row" id="slider-div" style="display:none">
+      <label>Total cubos</label>
+      <input type="range" id="slTotal" min="1" max="100" value="16" oninput="updateVizDiv()">
+      <span class="val-badge" id="lblTotal">16</span>
+      <label>Torres</label>
+      <input type="range" id="slTowers" min="1" max="10" value="4" oninput="updateVizDiv()">
+      <span class="val-badge" id="lblTowers">4</span>
+    </div>
+
+    <div id="cube-stage"></div>
+    <div class="equation-box" id="equation-box"></div>
+  </div>
+
+  <div class="card">
+    <h3>💡 ¿Qué observás?</h3>
+    <p style="color:var(--text-muted);line-height:1.7;font-size:.95rem">
+      Cuando <strong style="color:var(--accent2)">multiplicás</strong>, tomás grupos iguales y los juntás.<br>
+      Cuando <strong style="color:var(--accent1)">dividís</strong>, repartís una cantidad en grupos iguales.<br>
+      Son operaciones <strong style="color:var(--accent3)">inversas</strong>: una deshace lo que hace la otra.
+    </p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SECCIÓN 2: TABLAS
+══════════════════════════════════════ -->
+<div class="section" id="sec-tablas">
+  <div class="sec-title" style="color:var(--accent2)">📊 Tablas de multiplicar</div>
+  <p class="sec-desc">Hacé clic en cualquier celda para ver la multiplicación. Los colores indican la magnitud del resultado.</p>
+
+  <div class="card" id="tabla-card">
+    <div class="tabla-grid" id="tabla-grid"></div>
+    <div class="equation-box" id="tabla-equation-box" style="margin-top:14px;display:none;font-size:1.3rem;"></div>
+  </div>
+
+  <!-- Tabla principal + equivalentes -->
+  <div class="card" id="tabla-detail" style="display:none">
+    <h3 id="tabla-detail-title"></h3>
+    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;" id="tabla-detail-cells"></div>
+  </div>
+
+  <div id="tabla-equivalentes-wrap" style="display:none">
+    <p style="color:var(--text-muted);font-size:.9rem;margin-bottom:12px;">
+      🔁 <strong style="color:var(--accent5)">Otras multiplicaciones que dan el mismo resultado:</strong>
+    </p>
+    <div id="tabla-equivalentes"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SECCIÓN 3: MULTIPLICACIÓN
+══════════════════════════════════════ -->
+<div class="section" id="sec-mult">
+  <div class="sec-title" style="color:var(--accent5)">✖️ Practicá Multiplicación</div>
+  <p class="sec-desc">Elegí la dificultad y respondé. Podés pedir una pista si necesitás.</p>
+
+  <div class="level-row">
+    <button class="lvl-btn active" onclick="setLevel('mult',1,this)">⭐ 2 cifras</button>
+    <button class="lvl-btn" onclick="setLevel('mult',2,this)">⭐⭐ 3 cifras</button>
+    <button class="lvl-btn" onclick="setLevel('mult',3,this)">⭐⭐⭐ 4 cifras</button>
+  </div>
+
+  <div class="progress-row">
+    <div class="prog-bar"><div class="prog-fill" id="mult-prog" style="width:0%"></div></div>
+    <span class="prog-label" id="mult-prog-label">0/10</span>
+  </div>
+
+  <div class="card problem-box">
+    <div class="problem-display" id="mult-problem"></div>
+    <input class="answer-input" id="mult-answer" type="number" placeholder="?" onkeydown="if(event.key==='Enter')checkMult()">
+    <button class="btn-check" onclick="checkMult()">Verificar ✔</button>
+    <div class="feedback" id="mult-feedback"></div>
+    <button class="btn-hint" onclick="toggleHint('mult')">💡 Ver pista</button>
+    <div class="hint-box" id="mult-hint"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SECCIÓN 4: DIVISIÓN
+══════════════════════════════════════ -->
+<div class="section" id="sec-div">
+  <div class="sec-title" style="color:var(--accent1)">➗ Practicá División</div>
+  <p class="sec-desc">Resolvé divisiones de distintas dificultades. La pista muestra cómo pensar el problema.</p>
+
+  <div class="level-row">
+    <button class="lvl-btn active" onclick="setLevel('div',1,this)">⭐ Exacta fácil</button>
+    <button class="lvl-btn" onclick="setLevel('div',2,this)">⭐⭐ Con resto</button>
+    <button class="lvl-btn" onclick="setLevel('div',3,this)">⭐⭐⭐ Números grandes</button>
+  </div>
+
+  <div class="progress-row">
+    <div class="prog-bar"><div class="prog-fill" id="div-prog" style="width:0%"></div></div>
+    <span class="prog-label" id="div-prog-label">0/10</span>
+  </div>
+
+  <div class="card problem-box">
+    <div class="problem-display" id="div-problem"></div>
+    <div style="display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap;">
+      <div>
+        <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:4px">Cociente</div>
+        <input class="answer-input" id="div-answer" type="number" placeholder="?" style="width:140px" onkeydown="if(event.key==='Enter')checkDiv()">
+      </div>
+      <div id="div-resto-wrap">
+        <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:4px">Resto</div>
+        <input class="answer-input" id="div-resto" type="number" placeholder="?" style="width:120px" onkeydown="if(event.key==='Enter')checkDiv()">
+      </div>
+    </div>
+    <button class="btn-check" onclick="checkDiv()">Verificar ✔</button>
+    <div class="feedback" id="div-feedback"></div>
+    <button class="btn-hint" onclick="toggleHint('div')">💡 Ver pista</button>
+    <div class="hint-box" id="div-hint"></div>
+  </div>
+</div>
+
+</main>
+
+<script>
+// ── Globals ──
+let score = 0;
+let vizMode = 'mult';
+const CUBE_COLORS = ['#ff6b6b','#ffd166','#06d6a0','#118ab2','#c77dff','#ff9a3c','#4cc9f0','#f72585'];
+
+// ─────────────────────────────────────────
+// NAV
+// ─────────────────────────────────────────
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ─────────────────────────────────────────
+// SCORE
+// ─────────────────────────────────────────
+function addScore(n) {
+  score += n;
+  document.getElementById('score').textContent = score;
+  // mini star burst
+  const el = document.getElementById('score');
+  el.style.transform = 'scale(1.5)';
+  setTimeout(()=> el.style.transform = 'scale(1)', 300);
+}
+
+// ─────────────────────────────────────────
+// VIZ – MULTIPLICATION MODE
+// ─────────────────────────────────────────
+function setVizMode(m) {
+  vizMode = m;
+  document.getElementById('modeMultBtn').classList.toggle('active', m==='mult');
+  document.getElementById('modeDivBtn').classList.toggle('active', m==='div');
+  document.getElementById('slider-mult').style.display = m==='mult' ? 'flex' : 'none';
+  document.getElementById('slider-div').style.display  = m==='div'  ? 'flex' : 'none';
+  m==='mult' ? updateViz() : updateVizDiv();
+}
+
+function updateViz() {
+  const A = +document.getElementById('slA').value;
+  const B = +document.getElementById('slB').value;
+  document.getElementById('lblA').textContent = A;
+  document.getElementById('lblB').textContent = B;
+  renderCubes(A, B);
+  const eq = document.getElementById('equation-box');
+  eq.innerHTML = `<span class="eq-num">${A}</span> <span class="eq-op"> × </span> <span class="eq-num">${B}</span> <span class="eq-op"> = </span> <span class="eq-res">${A*B}</span>`;
+}
+
+function updateVizDiv() {
+  let total  = +document.getElementById('slTotal').value;
+  let towers = +document.getElementById('slTowers').value;
+  if(towers > total) { towers = total; document.getElementById('slTowers').value = towers; }
+  document.getElementById('lblTotal').textContent  = total;
+  document.getElementById('lblTowers').textContent = towers;
+  const perTower = Math.floor(total / towers);
+  const remainder = total % towers;
+  // render towers of perTower, last tower gets remainder extra
+  const stage = document.getElementById('cube-stage');
+  stage.innerHTML = '';
+  for(let t=0; t<towers; t++) {
+    const cubesInTower = perTower + (t < remainder ? 1 : 0);
+    const div = document.createElement('div');
+    div.className = 'tower';
+    const color = CUBE_COLORS[t % CUBE_COLORS.length];
+    for(let c=0; c<cubesInTower; c++) {
+      const cube = document.createElement('div');
+      cube.className = 'cube';
+      cube.style.background = color;
+      cube.style.animationDelay = (t*cubesInTower + c)*0.02 + 's';
+      div.appendChild(cube);
+    }
+    stage.appendChild(div);
+  }
+  const eq = document.getElementById('equation-box');
+  const restoStr = remainder > 0 ? ` <span class="eq-op"> r </span><span class="eq-num">${remainder}</span>` : '';
+  eq.innerHTML = `<span class="eq-num">${total}</span> <span class="eq-op"> ÷ </span> <span class="eq-num">${towers}</span> <span class="eq-op"> = </span> <span class="eq-res">${perTower}</span>${restoStr}`;
+}
+
+function renderCubes(towers, perTower) {
+  const stage = document.getElementById('cube-stage');
+  stage.innerHTML = '';
+  for(let t=0; t<towers; t++) {
+    const div = document.createElement('div');
+    div.className = 'tower';
+    const color = CUBE_COLORS[t % CUBE_COLORS.length];
+    for(let c=0; c<perTower; c++) {
+      const cube = document.createElement('div');
+      cube.className = 'cube';
+      cube.style.background = color;
+      cube.style.animationDelay = (t*perTower + c)*0.025 + 's';
+      div.appendChild(cube);
+    }
+    stage.appendChild(div);
+  }
+}
+
+// ─────────────────────────────────────────
+// TABLA
+// ─────────────────────────────────────────
+function buildTabla() {
+  const grid = document.getElementById('tabla-grid');
+  grid.innerHTML = '';
+  const corner = mkCell('×','header');
+  grid.appendChild(corner);
+  for(let j=1;j<=10;j++) grid.appendChild(mkCell(j,'header'));
+  for(let i=1;i<=10;i++) {
+    grid.appendChild(mkCell(i,'header'));
+    for(let j=1;j<=10;j++) {
+      const v = i*j;
+      const cell = mkCell(v,'data');
+      cell.dataset.row = i;
+      cell.dataset.col = j;
+      // default: green-hue gradient
+      const hue = Math.round(120 - (v/100)*90);
+      cell.dataset.defaultBg = `hsl(${hue},60%,30%)`;
+      cell.style.background = cell.dataset.defaultBg;
+      cell.style.color = '#fff';
+      cell.style.transition = 'background .25s, transform .15s, box-shadow .15s';
+      cell.onclick = () => showTablaDetail(i,j);
+      grid.appendChild(cell);
+    }
+  }
+}
+
+function mkCell(v, cls) {
+  const d = document.createElement('div');
+  d.className = 'tcell ' + cls;
+  d.textContent = v;
+  return d;
+}
+
+function showTablaDetail(a, b) {
+  const result = a * b;
+
+  // ── 1. Repintar celdas dentro de la grilla ──
+  const allCells = document.querySelectorAll('#tabla-grid .tcell.data');
+  allCells.forEach(cell => {
+    const r = +cell.dataset.row;
+    const c = +cell.dataset.col;
+    const inArea     = r <= a && c <= b;   // dentro del rectángulo a×b
+    const isSelected = r === a && c === b; // esquina = resultado
+
+    // reset
+    cell.style.transform  = 'scale(1)';
+    cell.style.zIndex     = '1';
+    cell.style.boxShadow  = 'none';
+    cell.style.opacity    = '1';
+
+    if (isSelected) {
+      // celda del resultado: blanco brillante
+      cell.style.background = '#ffffff';
+      cell.style.color      = '#0f0e17';
+      cell.style.transform  = 'scale(1.15)';
+      cell.style.zIndex     = '3';
+      cell.style.boxShadow  = '0 0 14px rgba(255,255,255,.75)';
+    } else if (inArea) {
+      // área: cada columna tiene el color de su "torre"
+      cell.style.background = CUBE_COLORS[(c - 1) % CUBE_COLORS.length];
+      cell.style.color      = '#0f0e17';
+    } else {
+      // fuera del área: verde original muy atenuado
+      cell.style.background = cell.dataset.defaultBg;
+      cell.style.opacity    = '0.25';
+      cell.style.color      = '#fff';
+    }
+  });
+
+  // ── 2. Ecuación debajo de la grilla ──
+  const eqBox = document.getElementById('tabla-equation-box');
+  eqBox.style.display = 'block';
+  eqBox.innerHTML = `<span class="eq-num">${a}</span> <span class="eq-op"> × </span> <span class="eq-num">${b}</span> <span class="eq-op"> = </span> <span class="eq-res">${result}</span>`;
+
+  // ── 3. Tabla principal ──
+  const box = document.getElementById('tabla-detail');
+  box.style.display = 'block';
+  document.getElementById('tabla-detail-title').textContent = `Tabla del ${a}`;
+  const cells = document.getElementById('tabla-detail-cells');
+  cells.innerHTML = '';
+  for(let k=1;k<=10;k++) {
+    const d = document.createElement('div');
+    d.className = 'tcell data';
+    const hl = k===b;
+    d.style.background = hl ? CUBE_COLORS[(b-1) % CUBE_COLORS.length] : 'var(--surface2)';
+    d.style.color = hl ? '#0f0e17' : 'var(--text)';
+    d.style.minWidth='64px'; d.style.borderRadius='8px'; d.style.padding='6px';
+    d.style.fontWeight='700'; d.style.fontSize='.85rem';
+    d.textContent = `${a}×${k}=${a*k}`;
+    if(hl) d.classList.add('highlight');
+    cells.appendChild(d);
+  }
+
+  // ── 4. Tablas equivalentes ──
+  const pairs = [];
+  for(let x=1; x<=10; x++) {
+    for(let y=x; y<=10; y++) {
+      if(x*y === result && !(x===Math.min(a,b) && y===Math.max(a,b))) {
+        pairs.push([x,y]);
+      }
+    }
+  }
+  if(a !== b) {
+    const hasSwap = pairs.some(([x,y])=> x===Math.min(a,b) && y===Math.max(a,b));
+    if(b<=10 && !hasSwap) pairs.unshift([Math.min(a,b), Math.max(a,b)]);
+  }
+
+  const wrap = document.getElementById('tabla-equivalentes-wrap');
+  const eqContainer = document.getElementById('tabla-equivalentes');
+  eqContainer.innerHTML = '';
+
+  if(pairs.length === 0) {
+    wrap.style.display = 'none';
+  } else {
+    wrap.style.display = 'block';
+    pairs.forEach(([x,y]) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.style.marginBottom = '12px';
+      card.style.borderColor = 'rgba(199,125,255,.3)';
+      const title = document.createElement('div');
+      title.style.fontWeight = '800';
+      title.style.marginBottom = '10px';
+      title.style.fontSize = '.95rem';
+      title.textContent = `Tabla del ${x} → ${x} × ${y} = ${result}`;
+      card.appendChild(title);
+      const row = document.createElement('div');
+      row.style.display = 'flex'; row.style.flexWrap = 'wrap'; row.style.gap = '5px';
+      for(let k=1;k<=10;k++) {
+        const d = document.createElement('div');
+        d.className = 'tcell data';
+        const hl = k===y;
+        d.style.background = hl ? 'var(--accent5)' : 'var(--surface2)';
+        d.style.color = hl ? '#0f0e17' : 'var(--text)';
+        d.style.minWidth='64px'; d.style.borderRadius='8px'; d.style.padding='6px';
+        d.style.fontWeight='700'; d.style.fontSize='.8rem';
+        d.textContent = `${x}×${k}=${x*k}`;
+        if(hl) d.classList.add('highlight');
+        row.appendChild(d);
+      }
+      card.appendChild(row);
+      eqContainer.appendChild(card);
+    });
+  }
+}
+
+// ─────────────────────────────────────────
+// PRACTICE ENGINE
+// ─────────────────────────────────────────
+let multLevel=1, divLevel=1;
+let multCurrent={}, divCurrent={};
+let multCount=0, divCount=0;
+
+function rnd(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+function setLevel(type, lvl, btn) {
+  document.querySelectorAll(`#sec-${type} .lvl-btn`).forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(type==='mult'){ multLevel=lvl; multCount=0; updateProg('mult'); nextMult(); }
+  else             { divLevel=lvl;  divCount=0;  updateProg('div');  nextDiv();  }
+}
+
+function updateProg(type) {
+  const cnt = type==='mult' ? multCount : divCount;
+  const pct = Math.min(cnt*10, 100);
+  document.getElementById(type+'-prog').style.width = pct+'%';
+  document.getElementById(type+'-prog-label').textContent = cnt+'/10';
+}
+
+// ── MULT ──
+function nextMult() {
+  const inp = document.getElementById('mult-answer');
+  inp.value=''; inp.className='answer-input';
+  document.getElementById('mult-feedback').textContent='';
+  document.getElementById('mult-hint').className='hint-box';
+
+  let a,b;
+  if(multLevel===1){ a=rnd(10,99); b=rnd(2,9); }
+  else if(multLevel===2){ a=rnd(100,999); b=rnd(10,99); }
+  else { a=rnd(1000,9999); b=rnd(10,99); }
+
+  multCurrent = {a,b,ans:a*b};
+  document.getElementById('mult-problem').innerHTML =
+    `<span>${a}</span><br><span class="op">×</span> <span>${b}</span><span class="line">?</span>`;
+
+  // hint
+  const steps = buildMultHint(a,b);
+  document.getElementById('mult-hint').innerHTML = steps;
+}
+
+function buildMultHint(a,b) {
+  // decompose b
+  if(b < 10) return `Pensá: <strong>${a} × ${b}</strong> = suma ${b} veces el ${a}<br>= ${a} + ... (${b} sumandos)`;
+  const tens = Math.floor(b/10)*10, units = b%10;
+  return `Descomponé: <strong>${b} = ${tens} + ${units}</strong><br>
+    → ${a} × ${tens} = <strong>${a*tens}</strong><br>
+    → ${a} × ${units} = <strong>${a*units}</strong><br>
+    → Sumás: ${a*tens} + ${a*units} = <strong>${a*b}</strong>`;
+}
+
+function checkMult() {
+  const inp = document.getElementById('mult-answer');
+  const val = parseInt(inp.value);
+  const fb  = document.getElementById('mult-feedback');
+  if(isNaN(val)) return;
+  if(val === multCurrent.ans) {
+    inp.className='answer-input correct';
+    fb.className='feedback ok';
+    fb.textContent='¡Muy bien! 🎉';
+    addScore(multLevel*10);
+    multCount++;
+    updateProg('mult');
+    setTimeout(nextMult, 1200);
+  } else {
+    inp.className='answer-input wrong';
+    fb.className='feedback err';
+    fb.textContent=`Casi… La respuesta era ${multCurrent.ans}. ¡Intentá el siguiente!`;
+    setTimeout(nextMult, 2000);
+  }
+}
+
+// ── DIV ──
+function nextDiv() {
+  const inp  = document.getElementById('div-answer');
+  const inp2 = document.getElementById('div-resto');
+  inp.value=''; inp.className='answer-input';
+  inp2.value=''; inp2.className='answer-input';
+  document.getElementById('div-feedback').textContent='';
+  document.getElementById('div-hint').className='hint-box';
+
+  let dividend, divisor, quotient, remainder;
+  if(divLevel===1) {
+    divisor  = rnd(2,9);
+    quotient = rnd(2,12);
+    dividend = divisor * quotient;
+    remainder = 0;
+  } else if(divLevel===2) {
+    divisor  = rnd(2,9);
+    quotient = rnd(10,99);
+    remainder = rnd(0,divisor-1);
+    dividend = divisor * quotient + remainder;
+  } else {
+    divisor  = rnd(10,99);
+    quotient = rnd(10,99);
+    remainder = rnd(0,divisor-1);
+    dividend = divisor * quotient + remainder;
+  }
+  divCurrent = {dividend, divisor, quotient, remainder};
+
+  const wrap = document.getElementById('div-resto-wrap');
+  wrap.style.display = divLevel===1 ? 'none' : 'block';
+
+  document.getElementById('div-problem').innerHTML =
+    `<span>${dividend}</span> <span class="op">÷</span> <span>${divisor}</span><span class="line">?</span>`;
+
+  // hint
+  let hint = `¿Cuántas veces entra <strong>${divisor}</strong> en <strong>${dividend}</strong>?<br>
+    Estimá: ${divisor} × 10 = ${divisor*10}, ${divisor} × 100 = ${divisor*100}<br>
+    Probá: ${divisor} × ${quotient} = <strong>${divisor*quotient}</strong>`;
+  if(remainder>0) hint += `<br>Diferencia: ${dividend} − ${divisor*quotient} = resto <strong>${remainder}</strong>`;
+  document.getElementById('div-hint').innerHTML = hint;
+}
+
+function checkDiv() {
+  const inp  = document.getElementById('div-answer');
+  const inp2 = document.getElementById('div-resto');
+  const q    = parseInt(inp.value);
+  const fb   = document.getElementById('div-feedback');
+  if(isNaN(q)) return;
+  const r = divLevel===1 ? 0 : (parseInt(inp2.value)||0);
+  const correct = q===divCurrent.quotient && r===divCurrent.remainder;
+  if(correct) {
+    inp.className='answer-input correct';
+    inp2.className='answer-input correct';
+    fb.className='feedback ok';
+    fb.textContent='¡Excelente! 🎉';
+    addScore(divLevel*10);
+    divCount++;
+    updateProg('div');
+    setTimeout(nextDiv, 1200);
+  } else {
+    inp.className='answer-input wrong';
+    fb.className='feedback err';
+    const ans = divLevel===1 ? `Cociente: ${divCurrent.quotient}` : `Cociente: ${divCurrent.quotient}, Resto: ${divCurrent.remainder}`;
+    fb.textContent=`La respuesta era: ${ans}`;
+    setTimeout(nextDiv, 2500);
+  }
+}
+
+// ── HINTS ──
+function toggleHint(type) {
+  const box = document.getElementById(type+'-hint');
+  box.classList.toggle('visible');
+}
+
+// ─────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────
+updateViz();
+buildTabla();
+nextMult();
+nextDiv();
+</script>
+</body>
+</html>
