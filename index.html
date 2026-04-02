@@ -211,7 +211,55 @@
     100% { transform: scale(1); }
   }
 
-  /* ── PRACTICE AREA ── */
+  /* ── MULT METHODS ── */
+  .mult-input {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    background: var(--surface2);
+    border: 2px solid #444;
+    color: var(--text);
+    border-radius: 8px;
+    text-align: center;
+    outline: none;
+    transition: border-color .2s, background .2s;
+    padding: 3px 2px;
+  }
+  .mult-input:focus { border-color: var(--accent3); }
+  .mult-input.ok    { border-color: var(--accent3); background: rgba(6,214,160,.15); color: var(--accent3); }
+  .mult-input.err   { border-color: var(--accent1); background: rgba(255,107,107,.15); color: var(--accent1); }
+  .mult-input.solved { border-color: var(--accent5); background: rgba(199,125,255,.15); color: var(--accent5); }
+
+  /* traditional method layout */
+  .trad-table { width:100%; border-collapse:separate; border-spacing:2px; }
+  .trad-table td { text-align:right; padding:2px 4px; font-family:'Fredoka One',cursive; font-size:1rem; vertical-align:middle; }
+  .trad-label { color:var(--text-muted); font-size:.75rem; font-family:'Nunito',sans-serif!important; font-weight:700; }
+  .trad-line { border-top: 2.5px solid var(--text-muted); }
+  .trad-dline { border-top: 3px double var(--accent2); }
+
+  /* area method */
+  .area-grid { display:grid; gap:3px; }
+  .area-cell {
+    background: var(--surface2);
+    border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    padding:6px 4px;
+    font-family:'Fredoka One',cursive;
+    font-size:.9rem;
+    min-height:44px;
+  }
+  .area-cell.header { background: rgba(17,138,178,.25); color: var(--accent4); font-size:.85rem; }
+  .area-cell.corner { background: transparent; }
+  .area-sum-row { display:flex; gap:6px; align-items:center; margin-top:10px; flex-wrap:wrap; }
+  .area-sum-label { font-size:.8rem; color:var(--text-muted); font-weight:700; }
+
+  /* solution column */
+  .solution-col { color: var(--accent5); opacity:.85; pointer-events:none; }
+
+  @media(max-width:640px) {
+    #mult-methods-wrap { grid-template-columns: 1fr; }
+  }
+
+  /* ── MULT METHODS ── */
   .problem-box {
     background: var(--surface2);
     border-radius: var(--radius);
@@ -415,7 +463,7 @@
 ══════════════════════════════════════ -->
 <div class="section" id="sec-mult">
   <div class="sec-title" style="color:var(--accent5)">✖️ Practicá Multiplicación</div>
-  <p class="sec-desc">Elegí la dificultad y respondé. Podés pedir una pista si necesitás.</p>
+  <p class="sec-desc">Completá los pasos en ambos métodos y verificá. Si hay errores, aparece la solución correcta al lado.</p>
 
   <div class="level-row">
     <button class="lvl-btn active" onclick="setLevel('mult',1,this)">⭐ 2 cifras</button>
@@ -428,13 +476,40 @@
     <span class="prog-label" id="mult-prog-label">0/10</span>
   </div>
 
-  <div class="card problem-box">
-    <div class="problem-display" id="mult-problem"></div>
-    <input class="answer-input" id="mult-answer" type="number" placeholder="?" onkeydown="if(event.key==='Enter')checkMult()">
+  <!-- Enunciado -->
+  <div class="card" style="text-align:center;padding:18px 24px;margin-bottom:16px;">
+    <div style="font-size:.8rem;color:var(--text-muted);margin-bottom:6px;">Resolvé esta multiplicación:</div>
+    <div id="mult-enunciado" style="font-family:'Fredoka One',cursive;font-size:2.2rem;letter-spacing:3px;">
+      <span id="mult-A" style="color:var(--accent2)"></span>
+      <span style="color:var(--accent1)"> × </span>
+      <span id="mult-B" style="color:var(--accent2)"></span>
+    </div>
+  </div>
+
+  <!-- Dos métodos lado a lado -->
+  <div id="mult-methods-wrap" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+
+    <!-- MÉTODO TRADICIONAL -->
+    <div class="card" style="min-width:0">
+      <h3 style="color:var(--accent3);margin-bottom:16px;">📐 Método Tradicional</h3>
+      <div id="trad-zone"></div>
+    </div>
+
+    <!-- MÉTODO DE ÁREAS -->
+    <div class="card" style="min-width:0">
+      <h3 style="color:var(--accent4);margin-bottom:16px;">🟦 Método de Áreas o de la Caja</h3>
+      <div id="area-zone"></div>
+    </div>
+
+  </div>
+
+  <div style="text-align:center;margin-bottom:12px;">
     <button class="btn-check" onclick="checkMult()">Verificar ✔</button>
-    <div class="feedback" id="mult-feedback"></div>
-    <button class="btn-hint" onclick="toggleHint('mult')">💡 Ver pista</button>
-    <div class="hint-box" id="mult-hint"></div>
+  </div>
+  <div class="feedback" id="mult-feedback"></div>
+
+  <div style="text-align:center;margin-top:12px;">
+    <button class="btn-hint" onclick="nextMult()" style="border-color:var(--accent2);color:var(--accent2);">⏭ Siguiente problema</button>
   </div>
 </div>
 
@@ -730,8 +805,6 @@ let multLevel=1, divLevel=1;
 let multCurrent={}, divCurrent={};
 let multCount=0, divCount=0;
 
-function rnd(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
-
 function setLevel(type, lvl, btn) {
   document.querySelectorAll(`#sec-${type} .lvl-btn`).forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
@@ -746,56 +819,592 @@ function updateProg(type) {
   document.getElementById(type+'-prog-label').textContent = cnt+'/10';
 }
 
+// ── UTILS ──
+function fmt(n) { return n.toLocaleString('es-AR'); }
+function rnd(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
 // ── MULT ──
 function nextMult() {
-  const inp = document.getElementById('mult-answer');
-  inp.value=''; inp.className='answer-input';
-  document.getElementById('mult-feedback').textContent='';
-  document.getElementById('mult-hint').className='hint-box';
+  document.getElementById('mult-feedback').textContent = '';
+  document.getElementById('mult-feedback').className = 'feedback';
 
-  let a,b;
-  if(multLevel===1){ a=rnd(10,99); b=rnd(2,9); }
+  let a, b;
+  if(multLevel===1){ a=rnd(12,99);   b=rnd(12,99); }
   else if(multLevel===2){ a=rnd(100,999); b=rnd(10,99); }
-  else { a=rnd(1000,9999); b=rnd(10,99); }
+  else { a=rnd(1000,9999); b=rnd(100,999); }
 
-  multCurrent = {a,b,ans:a*b};
-  document.getElementById('mult-problem').innerHTML =
-    `<span>${a}</span><br><span class="op">×</span> <span>${b}</span><span class="line">?</span>`;
+  multCurrent = { a, b, ans: a*b };
 
-  // hint
-  const steps = buildMultHint(a,b);
-  document.getElementById('mult-hint').innerHTML = steps;
+  document.getElementById('mult-A').textContent = fmt(a);
+  document.getElementById('mult-B').textContent = fmt(b);
+
+  buildTradMethod(a, b);
+  buildAreaMethod(a, b);
 }
 
-function buildMultHint(a,b) {
-  // decompose b
-  if(b < 10) return `Pensá: <strong>${a} × ${b}</strong> = suma ${b} veces el ${a}<br>= ${a} + ... (${b} sumandos)`;
-  const tens = Math.floor(b/10)*10, units = b%10;
-  return `Descomponé: <strong>${b} = ${tens} + ${units}</strong><br>
-    → ${a} × ${tens} = <strong>${a*tens}</strong><br>
-    → ${a} × ${units} = <strong>${a*units}</strong><br>
-    → Sumás: ${a*tens} + ${a*units} = <strong>${a*b}</strong>`;
+// ────────────────────────────────
+// MÉTODO TRADICIONAL
+// ────────────────────────────────
+
+// Compute per-digit carries for a × singleDigit
+function getCarries(a, d) {
+  const aDigits = String(a).split('').reverse(); // LSB first
+  const result = [];
+  let carry = 0;
+  aDigits.forEach(ad => {
+    const prod = parseInt(ad) * d + carry;
+    carry = Math.floor(prod / 10);
+    result.push(carry);
+  });
+  return result; // LSB first, same length as aDigits
+}
+
+// Compute carries when summing an array of numbers
+function getSumCarries(numbers) {
+  const maxLen = Math.max(...numbers.map(n => String(n).length)) + 2;
+  const carries = [];
+  let carry = 0;
+  for (let pos = 0; pos < maxLen; pos++) {
+    let colSum = carry;
+    numbers.forEach(n => {
+      const s = String(n);
+      const digit = s.length - 1 - pos >= 0 ? parseInt(s[s.length - 1 - pos]) : 0;
+      colSum += digit;
+    });
+    carry = Math.floor(colSum / 10);
+    carries[pos] = carry;
+  }
+  return carries;
+}
+
+function buildTradMethod(a, b) {
+  const zone = document.getElementById('trad-zone');
+  const digitsB = String(b).split('').reverse(); // LSB first
+  const partials = digitsB.map((d, i) => a * parseInt(d) * Math.pow(10, i));
+  multCurrent.tradPartials = partials;
+  multCurrent.tradCarriesByPartial = digitsB.map(d => getCarries(a, parseInt(d)));
+  multCurrent.tradSumCarries = getSumCarries(partials.filter(p => p > 0));
+  zone.innerHTML = renderTradLayout(a, b, false);
+}
+
+// Renders the traditional layout. solved=false → inputs; solved=true → filled violet display
+function renderTradLayout(a, b, solved, solutionColor='var(--accent5)') {
+  const digitsB = String(b).split('').reverse();
+  const partials = digitsB.map((d, i) => a * parseInt(d) * Math.pow(10, i));
+  const ans = a * b;
+  const ansStr = String(ans);
+  const aStr = String(a);
+  const bStr = String(b);
+  // total width in digit slots = ansStr.length
+  const W = ansStr.length;
+
+  // Helper: render a row of digit cells, right-aligned in W slots
+  // digits: array of {val, fixed, key, small} from MSB to LSB
+  // fixedZeros: number of fixed '0' chars on the right
+  function digitRow(digits, fixedZeros=0, rowStyle='') {
+    const totalSlots = digits.length + fixedZeros;
+    const padLeft = W - totalSlots;
+    let html = `<div style="display:flex;justify-content:flex-end;align-items:center;gap:1px;min-height:34px;${rowStyle}">`;
+    for(let p=0; p<padLeft; p++) html += `<div style="width:26px;"></div>`;
+    digits.forEach(({val, fixed, key, small}) => {
+      const w = small ? '20px' : '26px';
+      const h = small ? '18px' : '30px';
+      const fs = small ? '.7rem' : '1rem';
+      if(solved || fixed) {
+        const color = fixed ? 'var(--text-muted)' : solutionColor;
+        html += `<div style="width:${w};height:${h};display:flex;align-items:center;justify-content:center;
+          font-family:'Fredoka One',cursive;font-size:${fs};color:${color};
+          ${solved && !fixed ? `background:rgba(199,125,255,.1);border-radius:5px;border:1.5px solid rgba(199,125,255,.3);` : ''}
+          ">${val}</div>`;
+      } else {
+        html += `<input class="mult-input" data-type="${key.type}" data-expected="${key.expected}"
+          ${key.partial!==undefined?`data-partial="${key.partial}"`:''}
+          ${key.di!==undefined?`data-di="${key.di}"`:''}
+          style="width:${w};height:${h};font-size:${fs};padding:1px;" placeholder="?">`;
+      }
+    });
+    for(let z=0; z<fixedZeros; z++) {
+      html += `<div style="width:26px;height:30px;display:flex;align-items:center;justify-content:center;
+        font-family:'Fredoka One',cursive;font-size:1rem;color:var(--text-muted);">0</div>`;
+    }
+    html += `</div>`;
+    return html;
+  }
+
+  function hline(style='') {
+    return `<div style="border-top:2px solid var(--text-muted);margin:3px 0;${style}"></div>`;
+  }
+  function dline() {
+    return `<div style="border-top:3px solid var(--accent2);margin:3px 0;"></div>`;
+  }
+  function label(txt) {
+    return `<div style="font-size:.65rem;color:var(--text-muted);font-family:'Nunito',sans-serif;font-weight:700;margin-bottom:1px;">${txt}</div>`;
+  }
+
+  let html = `<div style="display:inline-block;min-width:${W*28}px;">`;
+
+  // ── For each partial (units digit of b first, then tens, etc.) ──
+  digitsB.forEach((dStr, pi) => {
+    const d = parseInt(dStr);
+    if(d === 0) return; // skip zero partials
+
+    const carries = getCarries(a, d); // LSB first
+    const hasCarry = carries.some(c => c > 0);
+
+    // Carries row for this partial (small digits above a, shifted one pos left)
+    if(hasCarry) {
+      // carries[ci] = carry OUT of digit position ci (LSB=0) → sits above digit ci+1
+      // In the partial row, digits occupy slots: padLeft ... padLeft+pLen-1, then pi fixed zeros
+      // partial row right-aligns pLen digits + pi zeros in W slots
+      // carry for position ci goes above digit (ci+1) of partial, which is at slot W-1-(ci+1)-pi = W-ci-pi-2
+      // We build a slot array of width W, placing carries at correct positions
+      const carrySlots = new Array(W).fill(null);
+      const partialRaw2 = a * d;
+      const partialStr2 = String(partialRaw2);
+      const pLen2 = partialStr2.length;
+
+      for(let ci = 0; ci < aStr.length; ci++) {
+        const cval = carries[ci] || 0;
+        if(cval > 0) {
+          // carry sits above position ci+1 from LSB of partial (before shift)
+          // position ci+1 from LSB = index pLen2-1-(ci+1) from left of partial digits
+          // in W-wide row that partial is right-aligned with pi trailing zeros:
+          // that digit is at slot W - pi - (pLen2 - (ci+1)) - 1 = W - pi - pLen2 + ci + 1 - 1 + 1
+          const slot = W - pi - pLen2 + ci; // one slot to the left of digit ci
+          if(slot >= 0 && slot < W) carrySlots[slot] = {cval, ci};
+        }
+      }
+
+      const carryDigits = carrySlots.map((entry, si) => {
+        if(entry !== null) {
+          return { val: entry.cval, fixed: false, small: true,
+            key: { type:'carry', expected: entry.cval, partial: pi, di: entry.ci } };
+        }
+        return { val: '', fixed: true, small: true, key:{} };
+      });
+
+      // Use raw digitRow with the full W-wide array (no extra padding needed)
+      function carryRow(digits, rowStyle='') {
+        let h = `<div style="display:flex;justify-content:flex-end;align-items:center;gap:1px;min-height:22px;${rowStyle}">`;
+        digits.forEach(({val, fixed, key, small}) => {
+          const w = '22px', ht = '18px', fs = '.7rem';
+          if(solved || fixed) {
+            const color = (val === '') ? 'transparent' : (solved && !fixed ? solutionColor : 'var(--text-muted)');
+            h += `<div style="width:${w};height:${ht};display:flex;align-items:center;justify-content:center;
+              font-family:'Fredoka One',cursive;font-size:${fs};color:${color};
+              ${solved && !fixed && val!=='' ? `background:rgba(199,125,255,.1);border-radius:4px;border:1px solid rgba(199,125,255,.3);` : ''}
+              ">${val}</div>`;
+          } else {
+            if(val === '') {
+              h += `<div style="width:${w};height:${ht};"></div>`;
+            } else {
+              h += `<input class="mult-input" data-type="${key.type}" data-expected="${key.expected}"
+                ${key.partial!==undefined?`data-partial="${key.partial}"`:''}
+                ${key.di!==undefined?`data-di="${key.di}"`:''}
+                style="width:${w};height:${ht};font-size:${fs};padding:1px;" placeholder="?">`;
+            }
+          }
+        });
+        h += `</div>`;
+        return h;
+      }
+
+      html += label(pi===0 ? 'llevadas (×unidades)' : pi===1 ? 'llevadas (×decenas)' : 'llevadas (×centenas)');
+      html += carryRow(carryDigits);
+    }
+
+    // Partial result row
+    const partialRaw = a * d; // e.g. 18×2 = 36 (no shift)
+    const partialStr = String(partialRaw);
+    const pDigits = partialStr.split('').map((v, di) => ({
+      val: v,
+      fixed: false,
+      small: false,
+      key: { type:'partial', expected: v, partial: pi, di }
+    }));
+    html += digitRow(pDigits, pi); // pi trailing zeros fixed
+    html += `<div style="height:3px;"></div>`;
+  });
+
+  // ── Separator line ──
+  html += hline();
+
+  // ── Sum carries (between partials and final result) ──
+  const activeParts = partials.filter(p => p > 0);
+  if(activeParts.length > 1) {
+    const sumCarries = getSumCarries(activeParts);
+    const hasSumCarry = sumCarries.some(c => c > 0);
+    if(hasSumCarry) {
+      // sumCarries[pos] = carry OUT of digit position pos (LSB=0) → sits above pos+1 of answer
+      // pos+1 from LSB = ansStr.length - 1 - (pos+1) from left = ansStr.length - pos - 2
+      // in W-wide row: slot = W - 1 - (ansStr.length - pos - 2) ... but W == ansStr.length so slot = pos + 1 from right = W - pos - 2
+      const scSlots = new Array(W).fill(null);
+      for(let pos = 0; pos < ansStr.length; pos++) {
+        const cval = sumCarries[pos] || 0;
+        if(cval > 0) {
+          const slot = W - pos - 2; // one slot to the left of digit pos from LSB
+          if(slot >= 0 && slot < W) scSlots[slot] = {cval, pos};
+        }
+      }
+      const scDigits = scSlots.map(entry => {
+        if(entry !== null) {
+          return { val: entry.cval, fixed: false, small: true,
+            key: { type:'sumcarry', expected: entry.cval, di: entry.pos } };
+        }
+        return { val: '', fixed: true, small: true, key:{} };
+      });
+      html += label('llevadas (suma)');
+      // reuse carryRow logic inline
+      html += `<div style="display:flex;justify-content:flex-end;align-items:center;gap:1px;min-height:22px;">`;
+      scDigits.forEach(({val, fixed, key}) => {
+        if(solved || fixed) {
+          const color = val==='' ? 'transparent' : (solved && !fixed ? solutionColor : 'var(--text-muted)');
+          html += `<div style="width:22px;height:18px;display:flex;align-items:center;justify-content:center;
+            font-family:'Fredoka One',cursive;font-size:.7rem;color:${color};
+            ${solved && !fixed && val!=='' ? 'background:rgba(199,125,255,.1);border-radius:4px;border:1px solid rgba(199,125,255,.3);' : ''}
+            ">${val}</div>`;
+        } else {
+          if(val==='') {
+            html += `<div style="width:22px;height:18px;"></div>`;
+          } else {
+            html += `<input class="mult-input" data-type="${key.type}" data-expected="${key.expected}"
+              data-di="${key.di}"
+              style="width:22px;height:18px;font-size:.7rem;padding:1px;" placeholder="?">`;
+          }
+        }
+      });
+      html += `</div>`;
+    }
+  }
+
+  // ── a row (reference) ──
+  // ── × b row ──
+  // Actually in traditional layout: a and ×b appear at the TOP. Let's restructure.
+  // We'll rebuild with correct top-down order below.
+
+  // ── Final answer ──
+  const ansDigits = ansStr.split('').map((v, di) => ({
+    val: v, fixed: false, small: false,
+    key: { type:'total', expected: v, di }
+  }));
+  html += digitRow(ansDigits, 0);
+  html += `</div>`;
+
+  // ── Wrap everything with a and ×b at the top ──
+  let full = `<div style="font-family:'Fredoka One',cursive;display:inline-block;">`;
+
+  // a (fixed display)
+  full += `<div style="display:flex;justify-content:flex-end;gap:1px;min-height:34px;align-items:center;">`;
+  for(let i=0; i<aStr.length; i++) {
+    full += `<div style="width:26px;height:30px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;">${aStr[i]}</div>`;
+  }
+  full += `</div>`;
+
+  // × b row (fixed display)
+  full += `<div style="display:flex;justify-content:flex-end;gap:1px;min-height:34px;align-items:center;">`;
+  full += `<div style="width:26px;height:30px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:var(--accent1);">×</div>`;
+  for(let i=0; i<bStr.length; i++) {
+    full += `<div style="width:26px;height:30px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;">${bStr[i]}</div>`;
+  }
+  full += `</div>`;
+
+  full += hline('margin-bottom:6px;');
+  full += html;
+  full += `</div>`;
+
+  // Wrapper div
+  if(solved) {
+    return `<div style="margin-top:16px;padding:14px 16px;background:rgba(199,125,255,.08);
+      border:1.5px solid rgba(199,125,255,.35);border-radius:12px;">
+      <div style="font-size:.75rem;color:var(--accent5);font-weight:800;margin-bottom:10px;">✅ Solución correcta</div>
+      ${full}
+    </div>`;
+  }
+  return full;
+}
+
+function buildTradSolutionLayout(a, b) {
+  return renderTradLayout(a, b, true);
+}
+
+// ────────────────────────────────
+// MÉTODO DE ÁREAS
+// ────────────────────────────────
+function buildAreaMethod(a, b) {
+  const zone = document.getElementById('area-zone');
+  zone.innerHTML = '';
+
+  // decompose a and b into place values
+  const decompA = decompose(a); // e.g. [3000, 400, 20, 5]
+  const decompB = decompose(b);
+
+  multCurrent.decompA = decompA;
+  multCurrent.decompB = decompB;
+  multCurrent.areaCells = [];
+
+  const cols = decompA.length;
+  const rows = decompB.length;
+
+  // grid: (rows+1) × (cols+1)
+  let html = `<div class="area-grid" style="grid-template-columns: auto ${'1fr '.repeat(cols)}">`;
+
+  // top-left corner
+  html += `<div class="area-cell corner"></div>`;
+  // header row: decomp of a
+  decompA.forEach(va => {
+    html += `<div class="area-cell header">${fmt(va)}</div>`;
+  });
+
+  // data rows
+  decompB.forEach((vb, ri) => {
+    // row header: decomp of b
+    html += `<div class="area-cell header">${fmt(vb)}</div>`;
+    decompA.forEach((va, ci) => {
+      const expected = va * vb;
+      multCurrent.areaCells.push({ri, ci, expected});
+      html += `<div class="area-cell">
+        <input class="mult-input" data-type="area" data-ri="${ri}" data-ci="${ci}"
+          data-expected="${expected}" style="width:100%;max-width:80px;height:32px;" placeholder="?">
+      </div>`;
+    });
+  });
+
+  html += `</div>`;
+
+  // ── Vertical sum ──
+  html += `<div style="margin-top:14px;">`;
+  html += `<div style="font-size:.7rem;color:var(--text-muted);font-family:'Nunito',sans-serif;font-weight:700;margin-bottom:4px;">Suma de áreas (vertical):</div>`;
+  html += `<div id="area-vsum-zone" style="display:inline-block;font-family:'Fredoka One',cursive;"></div>`;
+  html += `</div>`;
+
+  zone.innerHTML = html;
+
+  // live-update vertical sum as user fills area cells
+  zone.querySelectorAll('[data-type="area"]').forEach(inp => {
+    inp.addEventListener('input', updateAreaVerticalSum);
+  });
+  updateAreaVerticalSum();
+}
+
+function decompose(n) {
+  // Returns place-value parts, e.g. 345 → [300, 40, 5]
+  const s = String(n);
+  return s.split('').map((d, i) => parseInt(d) * Math.pow(10, s.length-1-i)).filter(v=>v>0);
+}
+
+function updateAreaVerticalSum() {
+  const zone = document.getElementById('area-zone');
+  const vsumZone = document.getElementById('area-vsum-zone');
+  if(!vsumZone) return;
+
+  // Gather user-entered values from area cells (use 0 if empty)
+  const userVals = multCurrent.areaCells.map(({ri, ci}) => {
+    const inp = zone.querySelector(`[data-type="area"][data-ri="${ri}"][data-ci="${ci}"]`);
+    return inp && inp.value !== '' ? (parseInt(inp.value) || 0) : null;
+  });
+
+  const ans = multCurrent.ans;
+  const ansStr = String(ans);
+  const W = ansStr.length + 1; // extra slot for potential carry overflow
+  const SLOT = 28;
+
+  // Compute sum carries from user values (use 0 for nulls)
+  const numericVals = userVals.map(v => v === null ? 0 : v);
+  const sumCarries = getSumCarries(numericVals);
+
+  function cell(content, opts={}) {
+    const {w=SLOT, h=30, fs='1rem', color='var(--text)', bg='transparent', border=false, dim=false} = opts;
+    return `<div style="width:${w}px;height:${h}px;display:flex;align-items:center;justify-content:center;
+      font-family:'Fredoka One',cursive;font-size:${fs};color:${dim?'var(--text-muted)':color};
+      background:${bg};border-radius:5px;${border?'border:2px solid #444;':''}flex-shrink:0;">${content}</div>`;
+  }
+
+  function row(digits, opts={}) {
+    const {prefix='', fixedZeros=0, rowH=32} = opts;
+    const totalSlots = (prefix?1:0) + digits.length + fixedZeros;
+    const padLeft = W - totalSlots;
+    let h = `<div style="display:flex;align-items:center;gap:1px;min-height:${rowH}px;">`;
+    for(let p=0;p<padLeft;p++) h += `<div style="width:${SLOT}px;"></div>`;
+    if(prefix) h += cell(prefix, {color:'var(--accent1)', fs:'1.1rem'});
+    digits.forEach(d => h += d);
+    for(let z=0;z<fixedZeros;z++) h += cell('0', {color:'var(--text-muted)'});
+    h += `</div>`;
+    return h;
+  }
+
+  let html = '';
+
+  // Carry row for sum — each carry sits one slot LEFT of its digit
+  const hasSumCarry = sumCarries.some(c=>c>0);
+  if(hasSumCarry) {
+    const scSlots = new Array(W).fill(null);
+    for(let pos = 0; pos < W; pos++) {
+      const cval = sumCarries[pos] || 0;
+      if(cval > 0) {
+        const slot = W - pos - 2; // one slot left of digit pos from LSB
+        if(slot >= 0 && slot < W) scSlots[slot] = {cval, pos};
+      }
+    }
+    let scHtml = `<div style="display:flex;gap:1px;align-items:center;min-height:20px;">`;
+    scSlots.forEach(entry => {
+      if(entry) {
+        scHtml += `<input class="mult-input" data-type="sumcarry" data-expected="${entry.cval}" data-di="${entry.pos}"
+          style="width:${SLOT-4}px;height:18px;font-size:.7rem;padding:1px;" placeholder="?">`;
+      } else {
+        scHtml += `<div style="width:${SLOT}px;height:18px;"></div>`;
+      }
+    });
+    scHtml += `</div>`;
+    html += scHtml;
+  }
+
+  // Each addend row
+  userVals.forEach((v, idx) => {
+    const isFirst = idx === 0;
+    const prefix = isFirst ? '' : '+';
+    const display = v === null ? '?' : String(v);
+    // pad display to digits
+    const digits = display === '?' 
+      ? [cell('?', {color:'var(--text-muted)'})]
+      : display.split('').map(d => cell(d));
+    html += row(digits, {prefix, fixedZeros:0});
+  });
+
+  // Line
+  html += `<div style="border-top:2px solid var(--text-muted);margin:3px 0;"></div>`;
+
+  // Total input
+  const ansDigits = ansStr.split('').map((_, di) => {
+    return `<input class="mult-input" data-type="area-total" data-expected="${ansStr[di]}" data-di="${di}"
+      style="width:${SLOT-2}px;height:30px;font-size:1rem;padding:1px;" placeholder="?">`;
+  });
+  html += row(ansDigits, {});
+
+  vsumZone.innerHTML = html;
 }
 
 function checkMult() {
-  const inp = document.getElementById('mult-answer');
-  const val = parseInt(inp.value);
-  const fb  = document.getElementById('mult-feedback');
-  if(isNaN(val)) return;
-  if(val === multCurrent.ans) {
-    inp.className='answer-input correct';
+  let allCorrect = true;
+
+  document.querySelectorAll('#sec-mult .mult-input').forEach(inp => {
+    const expected = inp.dataset.expected;
+    const val = inp.value.trim();
+    inp.classList.remove('ok','err');
+    if(val === '') { inp.classList.add('err'); allCorrect=false; return; }
+    if(val === String(expected)) { inp.classList.add('ok'); }
+    else { inp.classList.add('err'); allCorrect=false; }
+  });
+
+  const fb = document.getElementById('mult-feedback');
+
+  if(allCorrect) {
     fb.className='feedback ok';
-    fb.textContent='¡Muy bien! 🎉';
-    addScore(multLevel*10);
+    fb.textContent='¡Perfecto! Los dos métodos correctos 🎉';
+    addScore(multLevel*15);
     multCount++;
     updateProg('mult');
-    setTimeout(nextMult, 1200);
-  } else {
-    inp.className='answer-input wrong';
-    fb.className='feedback err';
-    fb.textContent=`Casi… La respuesta era ${multCurrent.ans}. ¡Intentá el siguiente!`;
     setTimeout(nextMult, 2000);
+  } else {
+    fb.className='feedback err';
+    fb.textContent='Hay algunos errores — revisá las celdas rojas y mirá las soluciones abajo 👇';
+    showTradSolution();
+    showAreaSolution();
   }
+}
+
+function showTradSolution() {
+  const {a, b} = multCurrent;
+  const zone = document.getElementById('trad-zone');
+  // Append solution layout below existing content
+  const existing = zone.querySelector('#trad-sol-block');
+  if(existing) existing.remove();
+  const div = document.createElement('div');
+  div.id = 'trad-sol-block';
+  div.innerHTML = buildTradSolutionLayout(a, b);
+  zone.appendChild(div);
+}
+
+function showAreaSolution() {
+  const {decompA, decompB, areaCells, ans} = multCurrent;
+  const zone = document.getElementById('area-zone');
+  const existing = zone.querySelector('#area-sol-block');
+  if(existing) existing.remove();
+
+  const cols = decompA.length;
+  const ansStr = String(ans);
+  const W = ansStr.length + 1;
+  const SLOT = 28;
+  const correctVals = areaCells.map(c => c.expected);
+  const sumCarries = getSumCarries(correctVals);
+
+  function scell(content, color='var(--accent4)') {
+    return `<div style="width:${SLOT}px;height:30px;display:flex;align-items:center;justify-content:center;
+      font-family:'Fredoka One',cursive;font-size:1rem;color:${color};
+      background:rgba(17,138,178,.12);border-radius:5px;border:1.5px solid rgba(17,138,178,.3);">${content}</div>`;
+  }
+  function srow(digits, prefix='') {
+    const totalSlots = (prefix?1:0) + digits.length;
+    const padLeft = W - totalSlots;
+    let h = `<div style="display:flex;align-items:center;gap:1px;min-height:32px;">`;
+    for(let p=0;p<padLeft;p++) h += `<div style="width:${SLOT}px;"></div>`;
+    if(prefix) h += `<div style="width:${SLOT}px;height:30px;display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:1.1rem;color:var(--accent1);">${prefix}</div>`;
+    digits.forEach(d => h += d);
+    h += `</div>`;
+    return h;
+  }
+
+  let vsumHtml = '';
+
+  // carry row — each carry sits one slot LEFT of its digit
+  const hasSumCarry = sumCarries.some(c=>c>0);
+  if(hasSumCarry) {
+    const scSlots = new Array(W).fill(null);
+    for(let pos=0; pos<W; pos++) {
+      const cval = sumCarries[pos]||0;
+      if(cval>0) {
+        const slot = W - pos - 2;
+        if(slot>=0 && slot<W) scSlots[slot] = cval;
+      }
+    }
+    vsumHtml += `<div style="display:flex;gap:1px;align-items:center;min-height:20px;">`;
+    scSlots.forEach(v => {
+      vsumHtml += v!==null
+        ? `<div style="width:${SLOT}px;height:18px;display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:.7rem;color:var(--accent4);background:rgba(17,138,178,.1);border-radius:4px;">${v}</div>`
+        : `<div style="width:${SLOT}px;height:18px;"></div>`;
+    });
+    vsumHtml += `</div>`;
+  }
+
+  correctVals.forEach((v, idx) => {
+    const prefix = idx === 0 ? '' : '+';
+    const digits = String(v).split('').map(d => scell(d));
+    vsumHtml += srow(digits, prefix);
+  });
+  vsumHtml += `<div style="border-top:2px solid var(--accent4);margin:3px 0;opacity:.5;"></div>`;
+  vsumHtml += srow(ansStr.split('').map(d => scell(d, 'var(--accent4)')));
+
+  let html = `<div id="area-sol-block" style="margin-top:16px;padding:14px 16px;
+    background:rgba(17,138,178,.08);border:1.5px solid rgba(17,138,178,.35);border-radius:12px;">
+    <div style="font-size:.75rem;color:var(--accent4);font-weight:800;margin-bottom:10px;">✅ Solución correcta</div>`;
+
+  // Grid
+  html += `<div class="area-grid" style="grid-template-columns: auto ${'1fr '.repeat(cols)}">`;
+  html += `<div class="area-cell corner"></div>`;
+  decompA.forEach(va => { html += `<div class="area-cell header">${fmt(va)}</div>`; });
+  decompB.forEach((vb) => {
+    html += `<div class="area-cell header">${fmt(vb)}</div>`;
+    decompA.forEach((va) => {
+      html += `<div class="area-cell" style="background:rgba(17,138,178,.15);color:var(--accent4);font-family:'Fredoka One',cursive;">${fmt(va*vb)}</div>`;
+    });
+  });
+  html += `</div>`;
+
+  // Vertical sum
+  html += `<div style="margin-top:12px;font-size:.7rem;color:var(--accent4);font-family:'Nunito',sans-serif;font-weight:700;margin-bottom:4px;">Suma vertical:</div>`;
+  html += `<div style="display:inline-block;font-family:'Fredoka One',cursive;">${vsumHtml}</div>`;
+
+  html += `</div>`;
+  zone.insertAdjacentHTML('beforeend', html);
 }
 
 // ── DIV ──
@@ -830,13 +1439,13 @@ function nextDiv() {
   wrap.style.display = divLevel===1 ? 'none' : 'block';
 
   document.getElementById('div-problem').innerHTML =
-    `<span>${dividend}</span> <span class="op">÷</span> <span>${divisor}</span><span class="line">?</span>`;
+    `<span>${fmt(dividend)}</span> <span class="op">÷</span> <span>${fmt(divisor)}</span><span class="line">?</span>`;
 
   // hint
-  let hint = `¿Cuántas veces entra <strong>${divisor}</strong> en <strong>${dividend}</strong>?<br>
-    Estimá: ${divisor} × 10 = ${divisor*10}, ${divisor} × 100 = ${divisor*100}<br>
-    Probá: ${divisor} × ${quotient} = <strong>${divisor*quotient}</strong>`;
-  if(remainder>0) hint += `<br>Diferencia: ${dividend} − ${divisor*quotient} = resto <strong>${remainder}</strong>`;
+  let hint = `¿Cuántas veces entra <strong>${fmt(divisor)}</strong> en <strong>${fmt(dividend)}</strong>?<br>
+    Estimá: ${fmt(divisor)} × 10 = ${fmt(divisor*10)}, ${fmt(divisor)} × 100 = ${fmt(divisor*100)}<br>
+    Probá: ${fmt(divisor)} × ${fmt(quotient)} = <strong>${fmt(divisor*quotient)}</strong>`;
+  if(remainder>0) hint += `<br>Diferencia: ${fmt(dividend)} − ${fmt(divisor*quotient)} = resto <strong>${fmt(remainder)}</strong>`;
   document.getElementById('div-hint').innerHTML = hint;
 }
 
@@ -860,7 +1469,7 @@ function checkDiv() {
   } else {
     inp.className='answer-input wrong';
     fb.className='feedback err';
-    const ans = divLevel===1 ? `Cociente: ${divCurrent.quotient}` : `Cociente: ${divCurrent.quotient}, Resto: ${divCurrent.remainder}`;
+    const ans = divLevel===1 ? `Cociente: ${fmt(divCurrent.quotient)}` : `Cociente: ${fmt(divCurrent.quotient)}, Resto: ${fmt(divCurrent.remainder)}`;
     fb.textContent=`La respuesta era: ${ans}`;
     setTimeout(nextDiv, 2500);
   }
@@ -868,8 +1477,10 @@ function checkDiv() {
 
 // ── HINTS ──
 function toggleHint(type) {
-  const box = document.getElementById(type+'-hint');
-  box.classList.toggle('visible');
+  if(type==='div') {
+    const box = document.getElementById('div-hint');
+    box.classList.toggle('visible');
+  }
 }
 
 // ─────────────────────────────────────────
