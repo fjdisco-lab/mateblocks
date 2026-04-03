@@ -368,6 +368,41 @@
     .tabla-grid { gap:2px; }
     .tcell { min-width:28px; min-height:28px; font-size:.65rem; }
   }
+
+  /* ── SUMAS Y RESTAS ── */
+  .sub-tabs { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+  .sub-tab { font-family:'Nunito',sans-serif; font-weight:700; font-size:.85rem; padding:8px 16px; border-radius:50px; border:2px solid var(--surface2); background:var(--surface2); color:var(--text-muted); cursor:pointer; transition:all .2s; }
+  .sub-tab.active { border-color:var(--accent1); color:var(--accent1); background:rgba(255,107,107,.1); }
+  .sub-panel { display:none; }
+  .sub-panel.active { display:block; animation:fadeIn .3s ease; }
+  .numline-wrap { position:relative; margin:24px 8px 44px; height:60px; }
+  .numline-track { position:absolute; top:28px; left:0; right:0; height:4px; background:var(--surface2); border-radius:2px; }
+  .numline-tick-el { position:absolute; top:20px; width:2px; height:18px; background:var(--text-muted); border-radius:1px; transform:translateX(-1px); }
+  .numline-num { position:absolute; top:42px; font-family:'Fredoka One',cursive; font-size:.8rem; color:var(--text-muted); transform:translateX(-50%); }
+  .numline-dot { position:absolute; top:22px; width:14px; height:14px; border-radius:50%; transform:translateX(-7px); transition:left .45s cubic-bezier(.175,.885,.32,1.275); }
+  #suma-cube-stage { display:flex; gap:8px; align-items:flex-end; min-height:140px; flex-wrap:wrap; margin:16px 0; }
+  .suma-op-sign { font-family:'Fredoka One',cursive; font-size:2rem; color:var(--accent1); align-self:center; }
+  .col-sum-input { font-family:'Fredoka One',cursive; font-size:1rem; background:var(--surface2); border:2px solid #444; color:var(--text); border-radius:8px; text-align:center; outline:none; width:28px; height:30px; padding:1px; transition:border-color .2s,background .2s; }
+  .col-sum-input.ok  { border-color:var(--accent3); background:rgba(6,214,160,.15); color:var(--accent3); }
+  .col-sum-input.err { border-color:var(--accent1); background:rgba(255,107,107,.15); color:var(--accent1); }
+
+  /* ── POTENCIAS Y RAÍCES ── */
+  .pot-sub-tabs { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+  .pot-sub-tab { font-family:'Nunito',sans-serif; font-weight:700; font-size:.85rem; padding:8px 16px; border-radius:50px; border:2px solid var(--surface2); background:var(--surface2); color:var(--text-muted); cursor:pointer; transition:all .2s; }
+  .pot-sub-tab.active { border-color:var(--accent5); color:var(--accent5); background:rgba(199,125,255,.1); }
+  .pot-sub-panel { display:none; }
+  .pot-sub-panel.active { display:block; animation:fadeIn .3s ease; }
+  .power-eq { font-family:'Fredoka One',cursive; font-size:2rem; text-align:center; letter-spacing:2px; margin:12px 0; }
+  .power-eq .pbase { color:var(--accent2); }
+  .power-eq .pexp  { color:var(--accent5); font-size:1.2rem; vertical-align:super; }
+  .power-eq .peq   { color:var(--accent1); }
+  .power-eq .pres  { color:var(--accent3); }
+  .expand-row { display:flex; flex-wrap:wrap; gap:4px; align-items:center; justify-content:center; font-family:'Fredoka One',cursive; font-size:1rem; margin:8px 0; color:var(--text-muted); }
+  .expand-factor { color:var(--accent2); }
+  .pat-table { width:100%; border-collapse:separate; border-spacing:3px; font-family:'Fredoka One',cursive; }
+  .pat-table th { background:var(--surface2); color:var(--text-muted); font-size:.8rem; padding:8px; border-radius:6px; text-align:center; }
+  .pat-table td { background:var(--surface2); padding:8px; border-radius:6px; text-align:center; font-size:.95rem; transition:background .3s,color .3s; }
+  .pat-hl td { background:rgba(199,125,255,.2)!important; color:var(--accent5)!important; }
 </style>
 </head>
 <body>
@@ -379,174 +414,329 @@
 </header>
 
 <nav>
-  <button class="active" onclick="showSection('visual')">🎲 Visualización</button>
-  <button onclick="showSection('tablas')">📊 Tablas</button>
-  <button onclick="showSection('mult')">✖️ Multiplicación</button>
-  <button onclick="showSection('div')">➗ División</button>
+  <button onclick="showSection('suma')">➕ Sumas y Restas</button>
+  <button onclick="showSection('multdiv')">✖️ Multiplicación y División</button>
+  <button onclick="showSection('pot')">⬛ Potencias y Raíces</button>
 </nav>
 
 <main>
 
 <!-- ══════════════════════════════════════
-     SECCIÓN 1: VISUALIZACIÓN
+     SECCIÓN: MULTIPLICACIÓN Y DIVISIÓN
 ══════════════════════════════════════ -->
-<div class="section active" id="sec-visual">
-  <div class="sec-title" style="color:var(--accent3)">🎲 Ver para entender</div>
-  <p class="sec-desc">Mueve los controles y observá cómo los cubos se agrupan. La multiplicación es agrupar, la división es repartir.</p>
+<div class="section" id="sec-multdiv">
+  <div class="sec-title" style="color:var(--accent5)">✖️ Multiplicación y División</div>
+  <p class="sec-desc">Multiplicar es agrupar cantidades iguales. Dividir es repartir en grupos iguales. Son operaciones inversas: una deshace lo que hace la otra.</p>
 
-  <div class="card">
-    <div class="mode-toggle">
-      <button class="mode-btn active" id="modeMultBtn" onclick="setVizMode('mult')">✖️ Multiplicación</button>
-      <button class="mode-btn" id="modeDivBtn"  onclick="setVizMode('div')">➗ División</button>
-    </div>
-
-    <div class="slider-row" id="slider-mult">
-      <label>Torres</label>
-      <input type="range" id="slA" min="1" max="10" value="4" oninput="updateViz()">
-      <span class="val-badge" id="lblA">4</span>
-      <label>Cubos c/u</label>
-      <input type="range" id="slB" min="1" max="10" value="4" oninput="updateViz()">
-      <span class="val-badge" id="lblB">4</span>
-    </div>
-
-    <div class="slider-row" id="slider-div" style="display:none">
-      <label>Total cubos</label>
-      <input type="range" id="slTotal" min="1" max="100" value="16" oninput="updateVizDiv()">
-      <span class="val-badge" id="lblTotal">16</span>
-      <label>Torres</label>
-      <input type="range" id="slTowers" min="1" max="10" value="4" oninput="updateVizDiv()">
-      <span class="val-badge" id="lblTowers">4</span>
-    </div>
-
-    <div id="cube-stage"></div>
-    <div class="equation-box" id="equation-box"></div>
+  <div class="sub-tabs">
+    <button class="sub-tab active" onclick="showSubTab('multdiv','visual',this)">🎲 Visualización</button>
+    <button class="sub-tab" onclick="showSubTab('multdiv','tablas',this)">📊 Tablas</button>
+    <button class="sub-tab" onclick="showSubTab('multdiv','ejercicios',this)">✏️ Ejercicios</button>
   </div>
 
-  <div class="card">
-    <h3>💡 ¿Qué observás?</h3>
-    <p style="color:var(--text-muted);line-height:1.7;font-size:.95rem">
-      Cuando <strong style="color:var(--accent2)">multiplicás</strong>, tomás grupos iguales y los juntás.<br>
-      Cuando <strong style="color:var(--accent1)">dividís</strong>, repartís una cantidad en grupos iguales.<br>
-      Son operaciones <strong style="color:var(--accent3)">inversas</strong>: una deshace lo que hace la otra.
-    </p>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════
-     SECCIÓN 2: TABLAS
-══════════════════════════════════════ -->
-<div class="section" id="sec-tablas">
-  <div class="sec-title" style="color:var(--accent2)">📊 Tablas de multiplicar</div>
-  <p class="sec-desc">Hacé clic en cualquier celda para ver la multiplicación. Los colores indican la magnitud del resultado.</p>
-
-  <div class="card" id="tabla-card">
-    <div class="tabla-grid" id="tabla-grid"></div>
-    <div class="equation-box" id="tabla-equation-box" style="margin-top:14px;display:none;font-size:1.3rem;"></div>
-  </div>
-
-  <!-- Tabla principal + equivalentes -->
-  <div class="card" id="tabla-detail" style="display:none">
-    <h3 id="tabla-detail-title"></h3>
-    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;" id="tabla-detail-cells"></div>
-  </div>
-
-  <div id="tabla-equivalentes-wrap" style="display:none">
-    <p style="color:var(--text-muted);font-size:.9rem;margin-bottom:12px;">
-      🔁 <strong style="color:var(--accent5)">Otras multiplicaciones que dan el mismo resultado:</strong>
-    </p>
-    <div id="tabla-equivalentes"></div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════
-     SECCIÓN 3: MULTIPLICACIÓN
-══════════════════════════════════════ -->
-<div class="section" id="sec-mult">
-  <div class="sec-title" style="color:var(--accent5)">✖️ Practicá Multiplicación</div>
-  <p class="sec-desc">Completá los pasos en ambos métodos y verificá. Si hay errores, aparece la solución correcta al lado.</p>
-
-  <div class="level-row">
-    <button class="lvl-btn active" onclick="setLevel('mult',1,this)">⭐ 2 cifras</button>
-    <button class="lvl-btn" onclick="setLevel('mult',2,this)">⭐⭐ 3 cifras</button>
-    <button class="lvl-btn" onclick="setLevel('mult',3,this)">⭐⭐⭐ 4 cifras</button>
-  </div>
-
-  <div class="progress-row">
-    <div class="prog-bar"><div class="prog-fill" id="mult-prog" style="width:0%"></div></div>
-    <span class="prog-label" id="mult-prog-label">0/10</span>
-  </div>
-
-  <!-- Enunciado -->
-  <div class="card" style="text-align:center;padding:18px 24px;margin-bottom:16px;">
-    <div style="font-size:.8rem;color:var(--text-muted);margin-bottom:6px;">Resolvé esta multiplicación:</div>
-    <div id="mult-enunciado" style="font-family:'Fredoka One',cursive;font-size:2.2rem;letter-spacing:3px;">
-      <span id="mult-A" style="color:var(--accent2)"></span>
-      <span style="color:var(--accent1)"> × </span>
-      <span id="mult-B" style="color:var(--accent2)"></span>
-    </div>
-  </div>
-
-  <!-- Dos métodos lado a lado -->
-  <div id="mult-methods-wrap" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-
-    <!-- MÉTODO TRADICIONAL -->
-    <div class="card" style="min-width:0">
-      <h3 style="color:var(--accent3);margin-bottom:16px;">📐 Método Tradicional</h3>
-      <div id="trad-zone"></div>
-    </div>
-
-    <!-- MÉTODO DE ÁREAS -->
-    <div class="card" style="min-width:0">
-      <h3 style="color:var(--accent4);margin-bottom:16px;">🟦 Método de Áreas o de la Caja</h3>
-      <div id="area-zone"></div>
-    </div>
-
-  </div>
-
-  <div style="text-align:center;margin-bottom:12px;">
-    <button class="btn-check" onclick="checkMult()">Verificar ✔</button>
-  </div>
-  <div class="feedback" id="mult-feedback"></div>
-
-  <div style="text-align:center;margin-top:12px;">
-    <button class="btn-hint" onclick="nextMult()" style="border-color:var(--accent2);color:var(--accent2);">⏭ Siguiente problema</button>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════
-     SECCIÓN 4: DIVISIÓN
-══════════════════════════════════════ -->
-<div class="section" id="sec-div">
-  <div class="sec-title" style="color:var(--accent1)">➗ Practicá División</div>
-  <p class="sec-desc">Resolvé divisiones de distintas dificultades. La pista muestra cómo pensar el problema.</p>
-
-  <div class="level-row">
-    <button class="lvl-btn active" onclick="setLevel('div',1,this)">⭐ Exacta fácil</button>
-    <button class="lvl-btn" onclick="setLevel('div',2,this)">⭐⭐ Con resto</button>
-    <button class="lvl-btn" onclick="setLevel('div',3,this)">⭐⭐⭐ Números grandes</button>
-  </div>
-
-  <div class="progress-row">
-    <div class="prog-bar"><div class="prog-fill" id="div-prog" style="width:0%"></div></div>
-    <span class="prog-label" id="div-prog-label">0/10</span>
-  </div>
-
-  <div class="card problem-box">
-    <div class="problem-display" id="div-problem"></div>
-    <div style="display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap;">
-      <div>
-        <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:4px">Cociente</div>
-        <input class="answer-input" id="div-answer" type="number" placeholder="?" style="width:140px" onkeydown="if(event.key==='Enter')checkDiv()">
+  <!-- SUB: VISUALIZACIÓN -->
+  <div class="sub-panel active" id="multdiv-sub-visual">
+    <div class="card">
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="modeMultBtn" onclick="setVizMode('mult')">✖️ Multiplicación</button>
+        <button class="mode-btn" id="modeDivBtn" onclick="setVizMode('div')">➗ División</button>
       </div>
-      <div id="div-resto-wrap">
-        <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:4px">Resto</div>
-        <input class="answer-input" id="div-resto" type="number" placeholder="?" style="width:120px" onkeydown="if(event.key==='Enter')checkDiv()">
+      <div class="slider-row" id="slider-mult">
+        <label>Torres</label>
+        <input type="range" id="slA" min="1" max="10" value="4" oninput="updateViz()">
+        <span class="val-badge" id="lblA">4</span>
+        <label>Cubos c/u</label>
+        <input type="range" id="slB" min="1" max="10" value="4" oninput="updateViz()">
+        <span class="val-badge" id="lblB">4</span>
+      </div>
+      <div class="slider-row" id="slider-div" style="display:none">
+        <label>Total cubos</label>
+        <input type="range" id="slTotal" min="1" max="100" value="16" oninput="updateVizDiv()">
+        <span class="val-badge" id="lblTotal">16</span>
+        <label>Torres</label>
+        <input type="range" id="slTowers" min="1" max="10" value="4" oninput="updateVizDiv()">
+        <span class="val-badge" id="lblTowers">4</span>
+      </div>
+      <div id="cube-stage"></div>
+      <div class="equation-box" id="equation-box"></div>
+    </div>
+    <div class="card">
+      <h3>💡 ¿Qué observás?</h3>
+      <p style="color:var(--text-muted);line-height:1.7;font-size:.95rem">
+        Cuando <strong style="color:var(--accent2)">multiplicás</strong>, tomás grupos iguales y los juntás.<br>
+        Cuando <strong style="color:var(--accent1)">dividís</strong>, repartís una cantidad en grupos iguales.<br>
+        Son operaciones <strong style="color:var(--accent3)">inversas</strong>: una deshace lo que hace la otra.
+      </p>
+    </div>
+  </div>
+
+  <!-- SUB: TABLAS -->
+  <div class="sub-panel" id="multdiv-sub-tablas">
+    <div class="card" id="tabla-card">
+      <div class="tabla-grid" id="tabla-grid"></div>
+      <div class="equation-box" id="tabla-equation-box" style="margin-top:14px;display:none;font-size:1.3rem;"></div>
+    </div>
+    <div class="card" id="tabla-detail" style="display:none">
+      <h3 id="tabla-detail-title"></h3>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;" id="tabla-detail-cells"></div>
+    </div>
+    <div id="tabla-equivalentes-wrap" style="display:none">
+      <p style="color:var(--text-muted);font-size:.9rem;margin-bottom:12px;">
+        🔁 <strong style="color:var(--accent5)">Otras multiplicaciones que dan el mismo resultado:</strong>
+      </p>
+      <div id="tabla-equivalentes"></div>
+    </div>
+  </div>
+
+  <!-- SUB: EJERCICIOS -->
+  <div class="sub-panel" id="multdiv-sub-ejercicios">
+    <div class="sub-tabs" style="margin-bottom:16px;">
+      <button class="sub-tab active" id="ej-mult-tab" onclick="showEjTab('mult',this)">✖️ Multiplicación</button>
+      <button class="sub-tab" id="ej-div-tab" onclick="showEjTab('div',this)">➗ División</button>
+    </div>
+
+    <!-- Ejercicios Multiplicación -->
+    <div id="ej-sub-mult">
+      <div class="level-row">
+        <button class="lvl-btn active" onclick="setLevel('mult',1,this)">⭐ 2 cifras</button>
+        <button class="lvl-btn" onclick="setLevel('mult',2,this)">⭐⭐ 3 cifras</button>
+        <button class="lvl-btn" onclick="setLevel('mult',3,this)">⭐⭐⭐ 4 cifras</button>
+      </div>
+      <div class="progress-row">
+        <div class="prog-bar"><div class="prog-fill" id="mult-prog" style="width:0%"></div></div>
+        <span class="prog-label" id="mult-prog-label">0/10</span>
+      </div>
+      <div class="card" style="text-align:center;padding:18px 24px;margin-bottom:16px;">
+        <div style="font-size:.8rem;color:var(--text-muted);margin-bottom:6px;">Resolvé esta multiplicación:</div>
+        <div id="mult-enunciado" style="font-family:'Fredoka One',cursive;font-size:2.2rem;letter-spacing:3px;">
+          <span id="mult-A" style="color:var(--accent2)"></span>
+          <span style="color:var(--accent1)"> × </span>
+          <span id="mult-B" style="color:var(--accent2)"></span>
+        </div>
+      </div>
+      <div id="mult-methods-wrap" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+        <div class="card" style="min-width:0">
+          <h3 style="color:var(--accent3);margin-bottom:16px;">📐 Método Tradicional</h3>
+          <div id="trad-zone"></div>
+        </div>
+        <div class="card" style="min-width:0">
+          <h3 style="color:var(--accent4);margin-bottom:16px;">🟦 Método de Áreas o de la Caja</h3>
+          <div id="area-zone"></div>
+        </div>
+      </div>
+      <div style="text-align:center;margin-bottom:12px;">
+        <button class="btn-check" onclick="checkMult()">Verificar ✔</button>
+      </div>
+      <div class="feedback" id="mult-feedback"></div>
+      <div style="text-align:center;margin-top:12px;">
+        <button class="btn-hint" onclick="nextMult()" style="border-color:var(--accent2);color:var(--accent2);">⏭ Siguiente problema</button>
       </div>
     </div>
-    <button class="btn-check" onclick="checkDiv()">Verificar ✔</button>
-    <div class="feedback" id="div-feedback"></div>
-    <button class="btn-hint" onclick="toggleHint('div')">💡 Ver pista</button>
-    <div class="hint-box" id="div-hint"></div>
+
+    <!-- Ejercicios División -->
+    <div id="ej-sub-div" style="display:none;">
+      <div class="level-row">
+        <button class="lvl-btn active" onclick="setLevel('div',1,this)">⭐ Exacta fácil</button>
+        <button class="lvl-btn" onclick="setLevel('div',2,this)">⭐⭐ Con resto</button>
+        <button class="lvl-btn" onclick="setLevel('div',3,this)">⭐⭐⭐ Números grandes</button>
+      </div>
+      <div class="progress-row">
+        <div class="prog-bar"><div class="prog-fill" id="div-prog" style="width:0%"></div></div>
+        <span class="prog-label" id="div-prog-label">0/10</span>
+      </div>
+      <div class="card problem-box">
+        <div class="problem-display" id="div-problem"></div>
+        <div style="display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap;">
+          <div>
+            <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:4px">Cociente</div>
+            <input class="answer-input" id="div-answer" type="number" placeholder="?" style="width:140px" onkeydown="if(event.key==='Enter')checkDiv()">
+          </div>
+          <div id="div-resto-wrap">
+            <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:4px">Resto</div>
+            <input class="answer-input" id="div-resto" type="number" placeholder="?" style="width:120px" onkeydown="if(event.key==='Enter')checkDiv()">
+          </div>
+        </div>
+        <button class="btn-check" onclick="checkDiv()">Verificar ✔</button>
+        <div class="feedback" id="div-feedback"></div>
+        <button class="btn-hint" onclick="toggleHint('div')">💡 Ver pista</button>
+        <div class="hint-box" id="div-hint"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SECCIÓN 5: SUMAS Y RESTAS
+══════════════════════════════════════ -->
+<div class="section" id="sec-suma">
+  <div class="sec-title" style="color:var(--accent1)">➕ Sumas y Restas</div>
+  <p class="sec-desc">Tres formas de ver la misma operación: en la recta, con cubos y en columna. Usá la que te resulte más clara.</p>
+
+  <div class="sub-tabs">
+    <button class="sub-tab active" onclick="showSubTab('suma','recta',this)">📏 Recta numérica</button>
+    <button class="sub-tab" onclick="showSubTab('suma','cubos',this)">🧊 Torres de cubos</button>
+    <button class="sub-tab" onclick="showSubTab('suma','columna',this)">🔢 En columna</button>
+  </div>
+
+  <!-- A: RECTA NUMÉRICA -->
+  <div class="sub-panel active" id="suma-sub-recta">
+    <div class="card">
+      <h3 style="margin-bottom:14px;">📏 Recta numérica</h3>
+      <div class="slider-row">
+        <label>Número A</label>
+        <input type="range" id="sl-suma-a" min="0" max="20" value="4" oninput="updateRecta()">
+        <span class="val-badge" id="lbl-suma-a">4</span>
+      </div>
+      <div class="slider-row" style="margin-top:8px;">
+        <label>Operación</label>
+        <button class="mode-btn active" id="btn-op-suma" onclick="setOp('suma')" style="flex:0;padding:8px 18px;">➕ Suma</button>
+        <button class="mode-btn" id="btn-op-resta" onclick="setOp('resta')" style="flex:0;padding:8px 18px;">➖ Resta</button>
+      </div>
+      <div class="slider-row" style="margin-top:8px;">
+        <label id="lbl-b-op">Sumar</label>
+        <input type="range" id="sl-suma-b" min="0" max="20" value="3" oninput="updateRecta()">
+        <span class="val-badge" id="lbl-suma-b">3</span>
+      </div>
+      <div id="recta-container" style="margin:8px 0 0;overflow-x:auto;">
+        <div style="min-width:320px;">
+          <div class="numline-wrap" id="recta-wrap"></div>
+        </div>
+      </div>
+      <div class="equation-box" id="recta-eq"></div>
+      <p style="color:var(--text-muted);font-size:.85rem;margin-top:10px;" id="recta-explain"></p>
+    </div>
+  </div>
+
+  <!-- B: TORRES DE CUBOS -->
+  <div class="sub-panel" id="suma-sub-cubos">
+    <div class="card">
+      <h3 style="margin-bottom:14px;">🧊 Torres de cubos</h3>
+      <div class="slider-row">
+        <label>Número A</label>
+        <input type="range" id="sl-scubo-a" min="1" max="15" value="4" oninput="updateSumaCubos()">
+        <span class="val-badge" id="lbl-scubo-a">4</span>
+      </div>
+      <div class="slider-row" style="margin-top:8px;">
+        <label>Operación</label>
+        <button class="mode-btn active" id="btn-cop-suma" onclick="setCuboOp('suma')" style="flex:0;padding:8px 18px;">➕ Suma</button>
+        <button class="mode-btn" id="btn-cop-resta" onclick="setCuboOp('resta')" style="flex:0;padding:8px 18px;">➖ Resta</button>
+      </div>
+      <div class="slider-row" style="margin-top:8px;">
+        <label id="lbl-cop-b">Sumar</label>
+        <input type="range" id="sl-scubo-b" min="1" max="15" value="3" oninput="updateSumaCubos()">
+        <span class="val-badge" id="lbl-scubo-b">3</span>
+      </div>
+      <div id="suma-cube-stage"></div>
+      <div class="equation-box" id="suma-cube-eq"></div>
+      <p style="color:var(--text-muted);font-size:.85rem;margin-top:10px;" id="suma-cube-explain"></p>
+    </div>
+  </div>
+
+  <!-- C: EN COLUMNA -->
+  <div class="sub-panel" id="suma-sub-columna">
+    <div class="card">
+      <h3 style="margin-bottom:14px;">🔢 Suma / Resta en columna</h3>
+      <div class="level-row">
+        <button class="lvl-btn active" onclick="setSumaLevel(1,this)">⭐ 2 cifras</button>
+        <button class="lvl-btn" onclick="setSumaLevel(2,this)">⭐⭐ 3 cifras</button>
+        <button class="lvl-btn" onclick="setSumaLevel(3,this)">⭐⭐⭐ 4 cifras</button>
+      </div>
+      <div class="level-row" style="margin-top:-8px;">
+        <button class="lvl-btn active" id="btn-col-suma" onclick="setSumaOp('suma',this)">➕ Suma</button>
+        <button class="lvl-btn" id="btn-col-resta" onclick="setSumaOp('resta',this)">➖ Resta</button>
+      </div>
+      <div class="progress-row" style="margin-top:8px;">
+        <div class="prog-bar"><div class="prog-fill" id="suma-prog" style="width:0%"></div></div>
+        <span class="prog-label" id="suma-prog-label">0/10</span>
+      </div>
+      <div style="margin:16px 0;min-height:180px;" id="suma-col-zone"></div>
+      <div style="text-align:center;">
+        <button class="btn-check" onclick="checkSumaCol()">Verificar ✔</button>
+      </div>
+      <div class="feedback" id="suma-col-feedback"></div>
+      <div style="text-align:center;margin-top:10px;">
+        <button class="btn-hint" onclick="nextSumaCol()" style="border-color:var(--accent2);color:var(--accent2);">⏭ Siguiente</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SECCIÓN 6: POTENCIAS Y RAÍCES
+══════════════════════════════════════ -->
+<div class="section" id="sec-pot">
+  <div class="sec-title" style="color:var(--accent5)">⬛ Potencias y Raíces</div>
+  <p class="sec-desc">Tres maneras de entender las potencias: como áreas y cubos, como patrones que crecen, y la raíz como operación inversa.</p>
+
+  <div class="pot-sub-tabs">
+    <button class="pot-sub-tab active" onclick="showPotTab('visual',this)">🟦 Área y volumen</button>
+    <button class="pot-sub-tab" onclick="showPotTab('patron',this)">📈 Patrones</button>
+    <button class="pot-sub-tab" onclick="showPotTab('raiz',this)">√ Raíces</button>
+  </div>
+
+  <!-- A: VISUAL ÁREA/VOLUMEN -->
+  <div class="pot-sub-panel active" id="pot-sub-visual">
+    <div class="card">
+      <h3 style="margin-bottom:14px;">🟦 Potencias como área y volumen</h3>
+      <div class="slider-row">
+        <label>Base</label>
+        <input type="range" id="sl-pot-base" min="1" max="6" value="3" oninput="updatePotVisual()">
+        <span class="val-badge" id="lbl-pot-base">3</span>
+      </div>
+      <div class="slider-row" style="margin-top:8px;">
+        <label>Exponente</label>
+        <input type="range" id="sl-pot-exp" min="1" max="3" value="2" oninput="updatePotVisual()">
+        <span class="val-badge" id="lbl-pot-exp">2</span>
+      </div>
+      <div style="margin:16px 0;display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
+        <div id="pot-cube-stage" style="display:flex;gap:4px;align-items:flex-end;flex-wrap:wrap;"></div>
+        <div>
+          <div class="power-eq" id="pot-eq"></div>
+          <div class="expand-row" id="pot-expand"></div>
+          <p style="color:var(--text-muted);font-size:.85rem;margin-top:8px;" id="pot-explain"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B: TABLA DE PATRONES -->
+  <div class="pot-sub-panel" id="pot-sub-patron">
+    <div class="card">
+      <h3 style="margin-bottom:14px;">📈 Tabla de patrones</h3>
+      <div class="slider-row">
+        <label>Base</label>
+        <input type="range" id="sl-pat-base" min="2" max="10" value="2" oninput="updatePatron()">
+        <span class="val-badge" id="lbl-pat-base">2</span>
+      </div>
+      <div style="overflow-x:auto;margin-top:16px;">
+        <table class="pat-table" id="pat-table">
+          <thead><tr><th>Potencia</th><th>Se lee</th><th>Multiplicación</th><th>Resultado</th></tr></thead>
+          <tbody id="pat-tbody"></tbody>
+        </table>
+      </div>
+      <p style="color:var(--text-muted);font-size:.85rem;margin-top:12px;" id="pat-explain"></p>
+    </div>
+  </div>
+
+  <!-- C: RAÍCES -->
+  <div class="pot-sub-panel" id="pot-sub-raiz">
+    <div class="card">
+      <h3 style="margin-bottom:14px;">√ La raíz como operación inversa</h3>
+      <div class="slider-row">
+        <label>Raíz n°</label>
+        <input type="range" id="sl-raiz-n" min="2" max="3" value="2" oninput="updateRaiz()">
+        <span class="val-badge" id="lbl-raiz-n">2</span>
+      </div>
+      <div class="slider-row" style="margin-top:8px;">
+        <label>Base</label>
+        <input type="range" id="sl-raiz-base" min="1" max="6" value="3" oninput="updateRaiz()">
+        <span class="val-badge" id="lbl-raiz-base">3</span>
+      </div>
+      <div style="margin:16px 0;display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
+        <div id="raiz-cube-stage" style="display:flex;gap:4px;align-items:flex-end;flex-wrap:wrap;"></div>
+        <div id="raiz-explain-zone"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -566,6 +756,13 @@ function showSection(id) {
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
   document.getElementById('sec-'+id).classList.add('active');
   event.currentTarget.classList.add('active');
+}
+
+function showEjTab(type, btn) {
+  document.querySelectorAll('#multdiv-sub-ejercicios .sub-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('ej-sub-mult').style.display = type==='mult' ? 'block' : 'none';
+  document.getElementById('ej-sub-div').style.display  = type==='div'  ? 'block' : 'none';
 }
 
 // ─────────────────────────────────────────
@@ -813,7 +1010,7 @@ function setLevel(type, lvl, btn) {
 }
 
 function updateProg(type) {
-  const cnt = type==='mult' ? multCount : divCount;
+  const cnt = type==='mult' ? multCount : type==='div' ? divCount : sumaColCount;
   const pct = Math.min(cnt*10, 100);
   document.getElementById(type+'-prog').style.width = pct+'%';
   document.getElementById(type+'-prog-label').textContent = cnt+'/10';
@@ -1475,21 +1672,486 @@ function checkDiv() {
   }
 }
 
-// ── HINTS ──
-function toggleHint(type) {
-  if(type==='div') {
-    const box = document.getElementById('div-hint');
-    box.classList.toggle('visible');
+
+// ─────────────────────────────────────────
+// SUB-TAB HELPERS
+// ─────────────────────────────────────────
+function showSubTab(sec, id, btn) {
+  document.querySelectorAll(`#sec-${sec} > .sub-tabs .sub-tab`).forEach(b => b.classList.remove('active'));
+  document.querySelectorAll(`#sec-${sec} > .sub-panel`).forEach(p => p.classList.remove('active'));
+  document.getElementById(`${sec}-sub-${id}`).classList.add('active');
+  btn.classList.add('active');
+}
+function showPotTab(id, btn) {
+  document.querySelectorAll('.pot-sub-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.pot-sub-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('pot-sub-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ─────────────────────────────────────────
+// SUMAS — RECTA NUMÉRICA
+// ─────────────────────────────────────────
+let rectaOp = 'suma';
+const RECTA_COLORS = ['#ff6b6b','#ffd166','#06d6a0','#118ab2','#c77dff','#ff9a3c','#4cc9f0'];
+
+function setOp(op) {
+  rectaOp = op;
+  document.getElementById('btn-op-suma').classList.toggle('active', op==='suma');
+  document.getElementById('btn-op-resta').classList.toggle('active', op==='resta');
+  document.getElementById('lbl-b-op').textContent = op==='suma' ? 'Sumar' : 'Restar';
+  const slB = document.getElementById('sl-suma-b');
+  const a = +document.getElementById('sl-suma-a').value;
+  slB.max = op==='resta' ? a : 20;
+  if(+slB.value > +slB.max) slB.value = slB.max;
+  updateRecta();
+}
+
+function updateRecta() {
+  const a = +document.getElementById('sl-suma-a').value;
+  let b = +document.getElementById('sl-suma-b').value;
+  document.getElementById('lbl-suma-a').textContent = a;
+  if(rectaOp==='resta' && b > a) { b = a; document.getElementById('sl-suma-b').value = a; }
+  document.getElementById('lbl-suma-b').textContent = b;
+  const result = rectaOp==='suma' ? a+b : a-b;
+  const maxVal = Math.max(a+b, 20);
+  const wrap = document.getElementById('recta-wrap');
+  wrap.style.width = '100%';
+
+  let html = '<div class="numline-track"></div>';
+  // ticks every unit up to maxVal
+  for(let i=0; i<=maxVal; i++) {
+    const pct = (i/maxVal)*100;
+    if(i % Math.ceil(maxVal/12) === 0 || i===a || i===result || i===0) {
+      html += `<div class="numline-tick-el" style="left:${pct}%"></div>`;
+      html += `<div class="numline-num" style="left:${pct}%">${i}</div>`;
+    }
   }
+
+  // draw arcs
+  if(rectaOp==='suma') {
+    // arc from 0→a (first number)
+    const x1 = 0, x2 = (a/maxVal)*100;
+    const mid = (x1+x2)/2;
+    html += `<svg style="position:absolute;top:0;left:0;width:100%;height:28px;overflow:visible;pointer-events:none" viewBox="0 0 100 28" preserveAspectRatio="none">
+      <path d="M${x1} 28 Q${mid} 2 ${x2} 28" fill="none" stroke="${RECTA_COLORS[0]}" stroke-width="0.4" opacity="0.6"/>
+    </svg>`;
+    // arc from a→result (second number)
+    const x3 = ((a)/maxVal)*100, x4 = (result/maxVal)*100;
+    const mid2 = (x3+x4)/2;
+    html += `<svg style="position:absolute;top:0;left:0;width:100%;height:28px;overflow:visible;pointer-events:none" viewBox="0 0 100 28" preserveAspectRatio="none">
+      <path d="M${x3} 28 Q${mid2} 2 ${x4} 28" fill="none" stroke="${RECTA_COLORS[2]}" stroke-width="0.5" opacity="0.9"/>
+    </svg>`;
+  } else {
+    const x1 = (a/maxVal)*100, x2 = (result/maxVal)*100;
+    const mid = (x1+x2)/2;
+    html += `<svg style="position:absolute;top:0;left:0;width:100%;height:28px;overflow:visible;pointer-events:none" viewBox="0 0 100 28" preserveAspectRatio="none">
+      <path d="M${x1} 28 Q${mid} 2 ${x2} 28" fill="none" stroke="${RECTA_COLORS[0]}" stroke-width="0.5" opacity="0.9"/>
+    </svg>`;
+  }
+
+  // dots
+  const positions = rectaOp==='suma' ? [0,a,result] : [result,a];
+  const colors = rectaOp==='suma' ? [RECTA_COLORS[0], RECTA_COLORS[2], RECTA_COLORS[1]] : [RECTA_COLORS[2], RECTA_COLORS[0]];
+  positions.forEach((v,i) => {
+    html += `<div class="numline-dot" style="left:${(v/maxVal)*100}%;background:${colors[i]};box-shadow:0 0 6px ${colors[i]}44;"></div>`;
+  });
+
+  wrap.innerHTML = html;
+
+  // equation
+  const op = rectaOp==='suma' ? '+' : '−';
+  document.getElementById('recta-eq').innerHTML =
+    `<span class="eq-num">${a}</span> <span class="eq-op">${op}</span> <span class="eq-num">${b}</span> <span class="eq-op">=</span> <span class="eq-res">${result}</span>`;
+  const jumpWord = rectaOp==='suma' ? `${b} salto${b!==1?'s':''} hacia adelante` : `${b} salto${b!==1?'s':''} hacia atrás`;
+  document.getElementById('recta-explain').textContent =
+    `Empezamos en ${rectaOp==='suma'?0:a} y damos ${jumpWord}.`;
+}
+
+// ─────────────────────────────────────────
+// SUMAS — TORRES DE CUBOS
+// ─────────────────────────────────────────
+let cuboOp = 'suma';
+
+function setCuboOp(op) {
+  cuboOp = op;
+  document.getElementById('btn-cop-suma').classList.toggle('active', op==='suma');
+  document.getElementById('btn-cop-resta').classList.toggle('active', op==='resta');
+  document.getElementById('lbl-cop-b').textContent = op==='suma' ? 'Sumar' : 'Restar';
+  const slB = document.getElementById('sl-scubo-b');
+  const a = +document.getElementById('sl-scubo-a').value;
+  slB.max = op==='resta' ? a : 15;
+  if(+slB.value > +slB.max) slB.value = slB.max;
+  updateSumaCubos();
+}
+
+function updateSumaCubos() {
+  const a = +document.getElementById('sl-scubo-a').value;
+  let b = +document.getElementById('sl-scubo-b').value;
+  document.getElementById('lbl-scubo-a').textContent = a;
+  if(cuboOp==='resta' && b > a) { b=a; document.getElementById('sl-scubo-b').value=a; }
+  document.getElementById('lbl-scubo-b').textContent = b;
+  const result = cuboOp==='suma' ? a+b : a-b;
+  const stage = document.getElementById('suma-cube-stage');
+
+  if(cuboOp==='suma') {
+    // Tower A + Tower B → merged result tower
+    let html = buildSumaTower(a, CUBE_COLORS[0], 'A');
+    html += `<div class="suma-op-sign">+</div>`;
+    html += buildSumaTower(b, CUBE_COLORS[1], 'B');
+    html += `<div class="suma-op-sign" style="color:var(--accent3)">=</div>`;
+    // merged tower: a cubes of color 0, then b cubes of color 1
+    html += `<div style="display:flex;flex-direction:column-reverse;gap:4px;align-items:center;">`;
+    for(let i=0;i<a;i++) html += `<div class="cube" style="background:${CUBE_COLORS[0]};animation:popIn .25s ${i*0.03}s both;"></div>`;
+    for(let i=0;i<b;i++) html += `<div class="cube" style="background:${CUBE_COLORS[1]};animation:popIn .25s ${(a+i)*0.03}s both;"></div>`;
+    html += `</div>`;
+    stage.innerHTML = html;
+    document.getElementById('suma-cube-eq').innerHTML =
+      `<span class="eq-num">${a}</span> <span class="eq-op">+</span> <span class="eq-num">${b}</span> <span class="eq-op">=</span> <span class="eq-res">${result}</span>`;
+    document.getElementById('suma-cube-explain').textContent =
+      `La torre roja de ${a} cubos y la naranja de ${b} se unen en una torre de ${result}.`;
+  } else {
+    // Tower A, remove b from top
+    let html = `<div style="display:flex;flex-direction:column-reverse;gap:4px;align-items:center;">`;
+    for(let i=0;i<result;i++) html += `<div class="cube" style="background:${CUBE_COLORS[0]};animation:popIn .25s ${i*0.03}s both;"></div>`;
+    for(let i=0;i<b;i++) html += `<div class="cube" style="background:${CUBE_COLORS[0]};opacity:0.25;border:2px dashed ${CUBE_COLORS[0]};animation:popIn .25s ${(result+i)*0.03}s both;"></div>`;
+    html += `</div>`;
+    html += `<div class="suma-op-sign" style="color:var(--accent1)">−</div>`;
+    html += buildSumaTower(b, CUBE_COLORS[1], 'restar');
+    html += `<div class="suma-op-sign" style="color:var(--accent3)">=</div>`;
+    html += buildSumaTower(result, CUBE_COLORS[2], 'resultado');
+    stage.innerHTML = html;
+    document.getElementById('suma-cube-eq').innerHTML =
+      `<span class="eq-num">${a}</span> <span class="eq-op">−</span> <span class="eq-num">${b}</span> <span class="eq-op">=</span> <span class="eq-res">${result}</span>`;
+    document.getElementById('suma-cube-explain').textContent =
+      `De la torre de ${a} cubos, quitamos ${b} (los transparentes). Quedan ${result}.`;
+  }
+}
+
+function buildSumaTower(n, color, label) {
+  let html = `<div style="display:flex;flex-direction:column-reverse;gap:4px;align-items:center;">`;
+  for(let i=0;i<n;i++) html += `<div class="cube" style="background:${color};animation:popIn .25s ${i*0.03}s both;"></div>`;
+  html += `</div>`;
+  return html;
+}
+
+// ─────────────────────────────────────────
+// SUMAS — COLUMNA
+// ─────────────────────────────────────────
+let sumaLevel=1, sumaColOp='suma', sumaColCurrent={}, sumaColCount=0;
+
+function setSumaLevel(lvl, btn) {
+  document.querySelectorAll('#sec-suma .lvl-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  sumaLevel=lvl; sumaColCount=0; updateProg('suma'); nextSumaCol();
+}
+function setSumaOp(op, btn) {
+  sumaColOp=op;
+  document.getElementById('btn-col-suma').classList.toggle('active',op==='suma');
+  document.getElementById('btn-col-resta').classList.toggle('active',op==='resta');
+  sumaColCount=0; updateProg('suma'); nextSumaCol();
+}
+
+function nextSumaCol() {
+  document.getElementById('suma-col-feedback').textContent='';
+  document.getElementById('suma-col-feedback').className='feedback';
+  let a, b;
+  if(sumaLevel===1){ a=rnd(11,99); b=rnd(11,99); }
+  else if(sumaLevel===2){ a=rnd(100,999); b=rnd(100,999); }
+  else { a=rnd(1000,9999); b=rnd(1000,9999); }
+  if(sumaColOp==='resta' && b>a) [a,b]=[b,a];
+  const ans = sumaColOp==='suma' ? a+b : a-b;
+  sumaColCurrent = {a,b,ans,op:sumaColOp};
+  renderSumaCol(a,b,ans,sumaColOp);
+}
+
+function renderSumaCol(a,b,ans,op) {
+  const zone = document.getElementById('suma-col-zone');
+  const aStr=String(a), bStr=String(b), ansStr=String(ans);
+  const W = ansStr.length+1;
+  const SLOT=28;
+
+  // compute carries
+  const carries=[];
+  if(op==='suma') {
+    let carry=0;
+    for(let i=aStr.length-1;i>=0;i--) {
+      const pos=aStr.length-1-i;
+      const da=parseInt(aStr[i]), db=bStr.length>i?parseInt(bStr[bStr.length-1-(aStr.length-1-i)]):0;
+      const sum=da+db+carry;
+      carry=Math.floor(sum/10);
+      carries[i]=carry;
+    }
+  } else {
+    let borrow=0;
+    for(let i=aStr.length-1;i>=0;i--) {
+      const pos=aStr.length-1-i;
+      const da=parseInt(aStr[i]);
+      const db=bStr.length>pos?parseInt(bStr[bStr.length-1-pos]):0;
+      let diff=da-db-borrow;
+      borrow=diff<0?1:0;
+      carries[i]=borrow;
+    }
+  }
+  const hasCarry=carries.some(c=>c>0);
+
+  function drow(digits, fixedLeft=0, prefix='', rowH=32) {
+    const total=(prefix?1:0)+fixedLeft+digits.length;
+    const pad=W-total;
+    let h=`<div style="display:flex;align-items:center;gap:1px;min-height:${rowH}px;">`;
+    for(let p=0;p<pad;p++) h+=`<div style="width:${SLOT}px;"></div>`;
+    if(prefix) h+=`<div style="width:${SLOT}px;height:30px;display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:1.1rem;color:var(--accent1);">${prefix}</div>`;
+    digits.forEach(d=>h+=d);
+    h+=`</div>`;
+    return h;
+  }
+  function fixed(v,color='var(--text)') {
+    return `<div style="width:${SLOT}px;height:30px;display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:1.1rem;color:${color};">${v}</div>`;
+  }
+  function inp(expected,type,di) {
+    return `<input class="col-sum-input" data-type="${type}" data-expected="${expected}" data-di="${di}" placeholder="?">`;
+  }
+
+  let html=`<div style="font-family:'Fredoka One',cursive;display:inline-block;">`;
+
+  // carry row
+  if(hasCarry) {
+    const carryDigits=[];
+    for(let i=0;i<aStr.length;i++) {
+      const cv=carries[i]||0;
+      carryDigits.push(cv>0 ? inp(cv,'carry',i) : `<div style="width:${SLOT}px;height:18px;"></div>`);
+    }
+    html+=`<div style="font-size:.65rem;color:var(--text-muted);font-family:'Nunito',sans-serif;font-weight:700;margin-bottom:1px;">${op==='suma'?'llevadas':'prestamos'}</div>`;
+    html+=`<div style="display:flex;gap:1px;justify-content:flex-end;min-height:20px;">${carryDigits.map(d=>d.replace('height:30px','height:18px').replace('font-size:1.1rem','font-size:.7rem')).join('')}</div>`;
+  }
+
+  // a row
+  html+=drow(aStr.split('').map(d=>fixed(d)));
+  // b row with operator
+  html+=drow(bStr.split('').map(d=>fixed(d)), 0, op==='suma'?'+':'−');
+  // line
+  html+=`<div style="border-top:2.5px solid var(--text-muted);margin:3px 0;"></div>`;
+  // answer
+  html+=drow(ansStr.split('').map((v,di)=>inp(v,'ans',di)));
+  html+=`</div>`;
+
+  // solution (hidden)
+  html+=`<div id="suma-col-sol" style="display:none;margin-top:16px;padding:12px 16px;background:rgba(199,125,255,.08);border:1.5px solid rgba(199,125,255,.3);border-radius:12px;">
+    <div style="font-size:.75rem;color:var(--accent5);font-weight:800;margin-bottom:8px;">✅ Solución correcta</div>
+    <div id="suma-col-sol-content" style="font-family:'Fredoka One',cursive;display:inline-block;"></div>
+  </div>`;
+
+  zone.innerHTML=html;
+}
+
+function checkSumaCol() {
+  let ok=true;
+  document.querySelectorAll('#suma-col-zone .col-sum-input').forEach(inp=>{
+    inp.classList.remove('ok','err');
+    const v=inp.value.trim();
+    if(!v){inp.classList.add('err');ok=false;return;}
+    if(v===String(inp.dataset.expected)) inp.classList.add('ok');
+    else {inp.classList.add('err');ok=false;}
+  });
+  const fb=document.getElementById('suma-col-feedback');
+  if(ok){
+    fb.className='feedback ok'; fb.textContent='¡Perfecto! 🎉';
+    addScore(sumaLevel*8); sumaColCount++; updateProg('suma');
+    setTimeout(nextSumaCol,1400);
+  } else {
+    fb.className='feedback err'; fb.textContent='Hay errores — revisá las celdas rojas y mirá la solución 👇';
+    showSumaColSol();
+  }
+}
+
+function showSumaColSol() {
+  const {a,b,ans,op}=sumaColCurrent;
+  const aStr=String(a),bStr=String(b),ansStr=String(ans);
+  const W=ansStr.length+1, SLOT=28;
+  function fixed(v,color='var(--accent5)'){
+    return `<div style="width:${SLOT}px;height:30px;display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:1.1rem;color:${color};background:rgba(199,125,255,.1);border-radius:5px;border:1.5px solid rgba(199,125,255,.3);">${v}</div>`;
+  }
+  function drow(digits,prefix=''){
+    const total=(prefix?1:0)+digits.length, pad=W-total;
+    let h=`<div style="display:flex;align-items:center;gap:1px;min-height:32px;">`;
+    for(let p=0;p<pad;p++) h+=`<div style="width:${SLOT}px;"></div>`;
+    if(prefix) h+=`<div style="width:${SLOT}px;height:30px;display:flex;align-items:center;justify-content:center;font-family:'Fredoka One',cursive;font-size:1.1rem;color:var(--accent1);">${prefix}</div>`;
+    digits.forEach(d=>h+=d);
+    h+=`</div>`;
+    return h;
+  }
+  let html=drow(aStr.split('').map(d=>fixed(d,'var(--text)')));
+  html+=drow(bStr.split('').map(d=>fixed(d,'var(--text)')),op==='suma'?'+':'−');
+  html+=`<div style="border-top:2.5px solid var(--accent5);margin:3px 0;opacity:.5;"></div>`;
+  html+=drow(ansStr.split('').map(d=>fixed(d)));
+  document.getElementById('suma-col-sol-content').innerHTML=html;
+  document.getElementById('suma-col-sol').style.display='block';
+}
+
+// ─────────────────────────────────────────
+// POTENCIAS — VISUAL
+// ─────────────────────────────────────────
+const POT_COLORS=['#ff6b6b','#ffd166','#06d6a0','#118ab2','#c77dff','#ff9a3c'];
+
+function updatePotVisual() {
+  const base=+document.getElementById('sl-pot-base').value;
+  const exp=+document.getElementById('sl-pot-exp').value;
+  document.getElementById('lbl-pot-base').textContent=base;
+  document.getElementById('lbl-pot-exp').textContent=exp;
+  const result=Math.pow(base,exp);
+  const stage=document.getElementById('pot-cube-stage');
+
+  let html='';
+  if(exp===1) {
+    // single column
+    html+=`<div style="display:flex;flex-direction:column-reverse;gap:3px;">`;
+    for(let i=0;i<base;i++) html+=`<div style="width:28px;height:28px;border-radius:5px;background:${POT_COLORS[0]};animation:popIn .25s ${i*.04}s both;"></div>`;
+    html+=`</div>`;
+  } else if(exp===2) {
+    // grid base×base
+    html+=`<div style="display:grid;grid-template-columns:repeat(${base},28px);gap:3px;">`;
+    for(let r=0;r<base;r++) for(let c=0;c<base;c++) {
+      const color=POT_COLORS[c%POT_COLORS.length];
+      const delay=(r*base+c)*.03;
+      html+=`<div style="width:28px;height:28px;border-radius:5px;background:${color};animation:popIn .25s ${delay}s both;"></div>`;
+    }
+    html+=`</div>`;
+  } else {
+    // exp===3: base layers side by side showing depth
+    for(let layer=0;layer<Math.min(base,4);layer++) {
+      html+=`<div style="display:grid;grid-template-columns:repeat(${base},20px);gap:2px;opacity:${1-layer*0.15};">`;
+      for(let r=0;r<base;r++) for(let c=0;c<base;c++) {
+        const color=POT_COLORS[(layer*2+c)%POT_COLORS.length];
+        const delay=(layer*base*base+r*base+c)*.02;
+        html+=`<div style="width:20px;height:20px;border-radius:3px;background:${color};animation:popIn .2s ${delay}s both;"></div>`;
+      }
+      html+=`</div>`;
+    }
+    if(base>4) html+=`<div style="align-self:center;color:var(--text-muted);font-family:'Fredoka One',cursive;font-size:1rem;">…×${base}</div>`;
+  }
+  stage.innerHTML=html;
+
+  // equation
+  const expNames=['','','cuadrado','cubo'];
+  document.getElementById('pot-eq').innerHTML=
+    `<span class="pbase">${base}</span><span class="pexp">${exp}</span><span class="peq"> = </span><span class="pres">${fmt(result)}</span>`;
+
+  // expand
+  const factors=Array(exp).fill(`<span class="expand-factor">${base}</span>`).join('<span style="color:var(--accent1);"> × </span>');
+  document.getElementById('pot-expand').innerHTML=factors+`<span style="color:var(--accent1);"> = </span><span style="color:var(--accent3);">${fmt(result)}</span>`;
+
+  const expDesc=exp===1?'una fila de cubos':exp===2?`un cuadrado de ${base}×${base}`:`un cubo de ${base}×${base}×${base}`;
+  document.getElementById('pot-explain').textContent=
+    `${base}${exp===2?'²':exp===3?'³':'¹'} = ${base} multiplicado por sí mismo ${exp} vez${exp>1?'es':''} = ${expDesc} de ${fmt(result)} cubos.`;
+}
+
+// ─────────────────────────────────────────
+// POTENCIAS — TABLA DE PATRONES
+// ─────────────────────────────────────────
+function updatePatron() {
+  const base=+document.getElementById('sl-pat-base').value;
+  document.getElementById('lbl-pat-base').textContent=base;
+  const tbody=document.getElementById('pat-tbody');
+  let rows='', prevResult=1;
+  for(let e=1;e<=8;e++) {
+    const result=Math.pow(base,e);
+    const mult=Array(e).fill(base).join(' × ');
+    const isLarge=result>99999;
+    rows+=`<tr class="${e<=4?'':''}" id="pat-row-${e}">
+      <td>${base}<sup>${e}</sup></td>
+      <td style="font-size:.8rem;">${base} elevado al ${e}</td>
+      <td style="font-size:.8rem;">${isLarge?`${base}<sup>${e-1}</sup> × ${base}`:mult}</td>
+      <td style="color:var(--accent3);font-weight:700;">${fmt(result)}</td>
+    </tr>`;
+    prevResult=result;
+  }
+  tbody.innerHTML=rows;
+
+  // highlight pattern: each result = previous × base
+  document.getElementById('pat-explain').textContent=
+    `Cada resultado es el anterior multiplicado por ${base}. ¡Es una multiplicación repetida!`;
+}
+
+// ─────────────────────────────────────────
+// POTENCIAS — RAÍCES
+// ─────────────────────────────────────────
+function updateRaiz() {
+  const n=+document.getElementById('sl-raiz-n').value;
+  const base=+document.getElementById('sl-raiz-base').value;
+  document.getElementById('lbl-raiz-n').textContent=n;
+  document.getElementById('lbl-raiz-base').textContent=base;
+  const power=Math.pow(base,n);
+  const stage=document.getElementById('raiz-cube-stage');
+
+  // render the cube/square
+  let html='';
+  if(n===2) {
+    html+=`<div>`;
+    html+=`<div style="font-size:.7rem;color:var(--text-muted);font-family:'Nunito',sans-serif;font-weight:700;margin-bottom:4px;">${fmt(power)} cubos → cuadrado</div>`;
+    html+=`<div style="display:grid;grid-template-columns:repeat(${base},24px);gap:2px;">`;
+    for(let r=0;r<base;r++) for(let c=0;c<base;c++) {
+      const color=POT_COLORS[c%POT_COLORS.length];
+      html+=`<div style="width:24px;height:24px;border-radius:4px;background:${color};animation:popIn .2s ${(r*base+c)*.03}s both;"></div>`;
+    }
+    html+=`</div></div>`;
+  } else {
+    html+=`<div>`;
+    html+=`<div style="font-size:.7rem;color:var(--text-muted);font-family:'Nunito',sans-serif;font-weight:700;margin-bottom:4px;">${fmt(power)} cubos → cubo 3D</div>`;
+    for(let layer=0;layer<Math.min(base,4);layer++) {
+      html+=`<div style="display:grid;grid-template-columns:repeat(${base},18px);gap:2px;margin-bottom:2px;opacity:${1-layer*.15};">`;
+      for(let r=0;r<base;r++) for(let c=0;c<base;c++) {
+        const color=POT_COLORS[(layer+c)%POT_COLORS.length];
+        html+=`<div style="width:18px;height:18px;border-radius:3px;background:${color};animation:popIn .2s ${(layer*base*base+r*base+c)*.02}s both;"></div>`;
+      }
+      html+=`</div>`;
+    }
+    html+=`</div>`;
+  }
+  stage.innerHTML=html;
+
+  // explanation
+  const rootSym=n===2?'√':'∛';
+  const nName=n===2?'cuadrada':'cúbica';
+  const sideWord=n===2?'lado':'arista';
+  const shapeWord=n===2?'cuadrado':'cubo';
+  document.getElementById('raiz-explain-zone').innerHTML=`
+    <div style="font-family:'Fredoka One',cursive;">
+      <div style="font-size:1.8rem;margin-bottom:8px;">
+        <span style="color:var(--accent5)">${rootSym}${fmt(power)}</span>
+        <span style="color:var(--accent1)"> = </span>
+        <span style="color:var(--accent3)">${base}</span>
+      </div>
+      <div class="equation-box" style="margin-bottom:10px;">
+        <span class="eq-num">${base}</span><span class="pexp" style="color:var(--accent5);font-size:1rem;vertical-align:super;">${n}</span>
+        <span class="eq-op"> = </span><span class="eq-res">${fmt(power)}</span>
+        <span style="color:var(--text-muted);font-size:.9rem;"> → </span>
+        <span style="color:var(--accent5)">${rootSym}${fmt(power)}</span>
+        <span class="eq-op"> = </span><span class="eq-res">${base}</span>
+      </div>
+      <p style="color:var(--text-muted);font-size:.85rem;line-height:1.6;">
+        Si tenés <strong style="color:var(--accent2)">${fmt(power)}</strong> cubos y los acomodás en un ${shapeWord} perfecto,<br>
+        cada ${sideWord} mide <strong style="color:var(--accent3)">${base}</strong>.
+        <br>La raíz ${nName} deshace la potencia.
+      </p>
+    </div>`;
 }
 
 // ─────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────
+document.getElementById('sec-suma').classList.add('active');
+document.querySelector('nav button').classList.add('active');
+
 updateViz();
 buildTabla();
 nextMult();
 nextDiv();
+updateRecta();
+updateSumaCubos();
+nextSumaCol();
+updatePotVisual();
+updatePatron();
+updateRaiz();
 </script>
 </body>
 </html>
